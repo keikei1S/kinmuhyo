@@ -1,0 +1,57 @@
+.fixing-base .fixing-box.fixed {
+  position: fixed;
+  top: 0;
+  z-index: 9999;
+}
+
+table.calender_column{
+    width: 100%;
+}
+
+table.calender_column td{
+    padding: 5px;
+    border: 1px solid #CCC;
+}
+/* 日曜日 */
+table.calender_column tr.week0{
+    background-color: #ffefef;
+    color: #FF0000;
+}
+
+
+/* 土曜日 */
+table.calender_column tr.week6{
+    background-color: #ededff;
+    color: #0000FF;
+}
+
+table.calender_column td:first-child{
+    width: 20%;
+    text-align: center;
+}
+
+table.calender_column td:last-child{
+    width: 80%;
+    color: #111111;
+}
+
+.kyuka{
+    background-color: #98fb98;
+}
+
+.check{
+    background-color: #ffc0cb;
+}
+
+.sum_title{
+    background-color: gray;
+}
+
+.shift{
+   background-color: #dcdcdc; 
+}
+.syukujitu{
+  background-color: #ffefef;
+  color: #FF0000;
+}
+

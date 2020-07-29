@@ -1,0 +1,70 @@
+.img{
+	height: 80px;
+}
+.login_name{
+	font-weight: bold;
+	font-size: 14px;
+}
+.login_form{
+	text-align: center;
+}
+.errMsg{
+	font-size: 10px;
+    border: dashed 0.1px #ff0000;
+    color:#ff0000;
+    width:300px;
+    height:30px;
+    text-align: center;
+    margin-left:94px;
+}
+.mail_btn{
+	width:100px;
+	height: 40px;
+	font-size:14px;
+	background-color: #98fb98;
+	display: block;
+  	margin: 50px 0 0 auto;
+  	position: absolute;
+  	top: 250px;
+  	left: 820px;
+
+}
+.back{
+	width: 400px;
+	margin:-60px auto;
+}
+.back_btn{
+	width:100px;
+	height:40px;
+	font-size: 14px;
+	background-color: #da70d6;
+	display: block;
+	margin: 0 0 auto 0;
+}
+.repass{
+	margin:10px auto;
+  	width:800px;
+}
+.repass_title{
+	text-align: center;
+	font-size: 24px;
+	font-weight: bold;
+}
+form{
+	width: 400px;
+	height: 170px;
+	margin:0 auto;
+}
+.repass_name{
+	font-weight: bold;
+	font-size: 14px;
+}
+.notice{
+	width: 800px;
+	margin-top: 100px; 
+	border: dashed 0.1px black;
+    color:black;
+    text-align: center;
+    font-size: 12px;
+
+}
