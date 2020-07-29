@@ -6,11 +6,12 @@
 </head>
 <body>
 <?php
-session_start();
-$result=$_SESSION['result'];
-$staff_number=$result['staff_number'];
-$staff_name=$result['familyname'].$result['firstname'];
-$email=$result['email'];
+if(!isset($_SESSION)){
+		session_start();
+	}
+	ob_start();
+	include("kinmuhyo.php");
+	ob_clean();
 print 'No.'.$staff_number.$staff_name;
 ?> 
 <div class="img">

@@ -1,10 +1,28 @@
 <?php
+//表示月
+//初期表示は今月
+if(empty($_SESSION["month"])){
+	$_SESSION["month"]=date('m');
+}
+if(isset($_POST["show"])){
+	if($_POST["show"]=="1"){
+		$_SESSION["month"]=date('m');
+	}elseif($_POST["show"]=="2"){
+		$_SESSION["month"]=date('m', strtotime('-1 month'));
+	}else{
+		if($_SESSION["month"]==date('m')){
+			$_SESSION["month"]=date('m');
+		}else{
+		$_SESSION["month"]=date('m', strtotime('-1 month'));
+		}
+	}
+}
 class kinmu_common{
 	/**
 	*ログインしたユーザーの社員番号に紐づく勤務表テーブルを取得する。
 	*/
 	public static function Kinmuhyo($staff_number){
-	$rec = false;	
+	$rec = false;
 
 	$dsn='mysql:dbname=kinmuhyo;host=localhost;charset=utf8';
 	$user='root';
@@ -19,9 +37,9 @@ class kinmu_common{
 		$rec = $stmt -> fetch(PDO::FETCH_ASSOC);
 		$dbh=null;
 		return $rec;
-	}	
+	}
 	catch(Exception $e)
-{	
+{
 	return $rec;
 	print 'システムエラーが発生しました。';
 	exit();
@@ -29,7 +47,7 @@ class kinmu_common{
 		}
 	}
 	public static function work_tbl($staff_number){
-	$rec = false;	
+	$rec = false;
 
 	$dsn='mysql:dbname=kinmuhyo;host=localhost;charset=utf8';
 	$user='root';
@@ -43,9 +61,9 @@ class kinmu_common{
 		$rec = $stmt -> fetchAll(PDO::FETCH_ASSOC);
 		$dbh=null;
 		return $rec;
-	}	
+	}
 	catch(Exception $e)
-{	
+{
 	return $rec;
 	print 'システムエラーが発生しました。';
 	exit();
@@ -59,7 +77,7 @@ class kinmu_common{
 	$now_month = date('t', strtotime($s_year_and_month));
 	$e_year_and_month = date("Y-").$_SESSION['month'].date("-".$now_month);
 	date_default_timezone_set('Asia/Tokyo');
-	$rec = false;	
+	$rec = false;
 	$dsn='mysql:dbname=kinmuhyo;host=localhost;charset=utf8';
 	$user='root';
 	$password='';
@@ -75,9 +93,9 @@ class kinmu_common{
 		$rec = $stmt -> fetchAll(PDO::FETCH_ASSOC);
 		$dbh=null;
 		return $rec;
-	}	
+	}
 	catch(Exception $e)
-{	
+{
 	return $rec;
 	print 'システムエラーが発生しました。';
 	exit();
@@ -85,7 +103,7 @@ class kinmu_common{
 		}
 	}
 	public static function BELONGSS($work_id){
-	$rec = false;	
+	$rec = false;
 
 	$dsn='mysql:dbname=kinmuhyo;host=localhost;charset=utf8';
 	$user='root';
@@ -100,9 +118,9 @@ class kinmu_common{
 		$rec = $stmt -> fetch(PDO::FETCH_ASSOC);
 		$dbh=null;
 		return $rec;
-	}	
+	}
 	catch(Exception $e)
-{	
+{
 	return $rec;
 	print 'システムエラーが発生しました。';
 	exit();
@@ -111,7 +129,7 @@ class kinmu_common{
 	}
 //勤務表テーブルに格納されている実働時間の合計を取得する
 	public static function sum_total($staff_number){
-	$rec = false;	
+	$rec = false;
 	$s_year_and_month = date("Y-").$_SESSION['month'].date("-01");
 	$now_month = date('t', strtotime($s_year_and_month));
 	$e_year_and_month = date("Y-").$_SESSION['month'].date("-".$now_month);
@@ -130,9 +148,9 @@ class kinmu_common{
 		$rec = $stmt -> fetch(PDO::FETCH_ASSOC);
 		$dbh=null;
 		return $rec;
-	}	
+	}
 	catch(Exception $e)
-{	
+{
 	return $rec;
 	print 'システムエラーが発生しました。';
 	exit();
@@ -141,7 +159,7 @@ class kinmu_common{
 	}
 	//勤務表テーブルに格納されている残業時間の合計を取得する
 	public static function sum_overtime($staff_number){
-	$rec = false;	
+	$rec = false;
 	$s_year_and_month = date("Y-").$_SESSION['month'].date("-01");
 	$now_month = date('t', strtotime($s_year_and_month));
 	$e_year_and_month = date("Y-").$_SESSION['month'].date("-".$now_month);
@@ -160,9 +178,9 @@ class kinmu_common{
 		$rec = $stmt -> fetch(PDO::FETCH_ASSOC);
 		$dbh=null;
 		return $rec;
-	}	
+	}
 	catch(Exception $e)
-{	
+{
 	return $rec;
 	print 'システムエラーが発生しました。';
 	exit();
@@ -171,7 +189,7 @@ class kinmu_common{
 	}
 	//勤務表テーブルに格納されている深夜残業時間の合計を取得する
 	public static function sum_overtime_night($staff_number){
-	$rec = false;	
+	$rec = false;
 	$s_year_and_month = date("Y-").$_SESSION['month'].date("-01");
 	$now_month = date('t', strtotime($s_year_and_month));
 	$e_year_and_month = date("Y-").$_SESSION['month'].date("-".$now_month);
@@ -190,9 +208,9 @@ class kinmu_common{
 		$rec = $stmt -> fetch(PDO::FETCH_ASSOC);
 		$dbh=null;
 		return $rec;
-	}	
+	}
 	catch(Exception $e)
-{	
+{
 	return $rec;
 	print 'システムエラーが発生しました。';
 	exit();
@@ -201,7 +219,7 @@ class kinmu_common{
 	}
 	//勤務表テーブルに格納されている不足時間の合計を取得する
 	public static function sum_short($staff_number){
-	$rec = false;	
+	$rec = false;
 	$s_year_and_month = date("Y-").$_SESSION['month'].date("-01");
 	$now_month = date('t', strtotime($s_year_and_month));
 	$e_year_and_month = date("Y-").$_SESSION['month'].date("-".$now_month);
@@ -220,9 +238,9 @@ class kinmu_common{
 		$rec = $stmt -> fetch(PDO::FETCH_ASSOC);
 		$dbh=null;
 		return $rec;
-	}	
+	}
 	catch(Exception $e)
-{	
+{
 	return $rec;
 	print 'システムエラーが発生しました。';
 	exit();
@@ -242,8 +260,8 @@ public static function INSERT_Summary($staff_number){
  	$params =array('staff_number' => $staff_number,'year_and_month' => $s_year_and_month, 'work_ID' => $_SESSION['work_id'], 'remaining_paid_days' => $_SESSION['yukyuzan'], 'status' => '1', 'opening_hours' => $_SESSION['opening'], 'closing_hours' => $_SESSION['closong']);
 		$stmt->execute($params);
 		$dbh=null;
-	}	
-	catch(Exception $e){	
+	}
+	catch(Exception $e){
 		var_dump($e);
 	print 'システムエラーが発生しました。';
 	exit();
@@ -255,7 +273,7 @@ public static function INSERT_Summary($staff_number){
 //祝日テーブルに格納されている値を取得する
 class kinmu_holiday{
 	public static function Holiday($q){
-	$q = false;	
+	$q = false;
 	try{
 		$dsn='mysql:dbname=kinmuhyo;host=localhost;charset=utf8';
 		$user='root';
@@ -268,9 +286,9 @@ class kinmu_holiday{
     	$q[]=($val['day']);
 		}
 		return $q;
-	}	
+	}
 	catch(Exception $e)
-	{	
+	{
 	return $rec;
 	print 'システムエラーが発生しました。';
 	exit();
@@ -278,4 +296,3 @@ class kinmu_holiday{
 		}
 	}
 }
-

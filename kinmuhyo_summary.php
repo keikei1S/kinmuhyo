@@ -6,18 +6,15 @@
 </head>
 <body>
 <?php
+//セッションが開始されていなければセッションを開始する。
 if(!isset($_SESSION)){
-		session_start();
-	}
-// ob_start();
-// include("kinmuhyo.php");
-// ob_clean();
-$result=$_SESSION['result'];
-$staff_name=$result['familyname'].$result['firstname'];
-$email=$result['email'];
-//$nengetshu=$_POST['nengetshu'];
-$yukyu=$result['holiday_with_pay'];
-//print'$nengetshu';
+	session_start();
+}
+//ファイル読み込み	(勤務表)
+ob_start();
+include("kinmuhyo.php");
+ob_clean();
+
 //先月か今月の判定
 if(isset($_POST['show'])==""){?>
 	<h3><?php print $now_month?>月分勤務表</h3>
@@ -37,120 +34,105 @@ print'<table border="1">';
 	print'</tr>';
 print'</table>';
 
-$selected['show']=array_fill(1,2,"");
+//先月か今月を選択するプルダウン生成S//
+$select['show']=array_fill(1,2,"");
 $show=filter_input(INPUT_POST,"show");
-$selected["show"][$show]="selected";
+$select["show"][$show]="selected";
 
 print <<<eof
 <form method="post" action="kinmuhyo_summary.php">
 表示する月　
 <select name="show" width:50px>
 	//<td>の中に変数入れる
-	<option value="1"{$selected["show"][1]}>今月</option>
-	<option value="2"{$selected["show"][2]}>先月</option>
+	<option value="1"{$select["show"][1]}>今月</option>
+	<option value="2"{$select["show"][2]}>先月</option>
 </select>
 <input name="nengetshu" type="submit" value="表示">
 </form>
 eof;
-// print'<input name="nengetshu" type="submit" value="表示">';
-// print'</form>';
-print'<p>';
-//出勤日数の取得
-$syukkin = array_count_values($check);
-$syukkin_nissuu=$syukkin["OK"];
+//先月か今月を選択するプルダウン生成E//
 
- $kyuuka_nissuu="";
-foreach($holiday as $key =>$val){
-   if(stristr($holiday[$key],"1") !== false){
-      $kyuuka_nissuu++;
-   }
-    if(stristr($holiday[$key],"2") !== false){
-      $kyuuka_nissuu++;
-   }
-   if(stristr($holiday[$key],"3") !== false){
-      $kyuuka_nissuu++;
-   }
+//休暇日数の計算
+//初期値は0
+ $kyuuka_nissuu=0;
+ if(isset($holiday)){
+	foreach($holiday as $key =>$val){
+  		if(stristr($holiday[$key],"1") !== false){
+      		$kyuuka_nissuu++;
+   		}
+    	if(stristr($holiday[$key],"2") !== false){
+      		$kyuuka_nissuu++;
+   		}
+   		if(stristr($holiday[$key],"3") !== false){
+      		$kyuuka_nissuu++;
+   		}
+	}
 }
 if($kyuuka_nissuu!=""){
 $syukkin_nissuu=$syukkin_nissuu-$kyuuka_nissuu;
 }
-
-//振休日数の取得
-if(isset($holiday)){
-$kai=0;
-foreach($holiday as $key =>$val){
-   if(stristr($holiday[$key],"2") !== false){
-      $kai++;
-   }
-}
-//有給休暇の日数
+//有給日数の計算
 $syoka=0;
-foreach($holiday as $key =>$val){
-   if(stristr($holiday[$key],"1") !== false){
-      $syoka++;
-   }
-}
-
-//特別休暇日数の取得
+$transfer_holiday=0;
+$special_holiday=0;
+$zenhan=0;
+$kouhan=0;
 if(isset($holiday)){
-$tokkyu=0;
-foreach($holiday as $key =>$val){
-   if(stristr($holiday[$key],"3") !== false){
-      $tokkyu++;
-   }
-}
+	foreach($holiday as $key =>$val){
+		//有給休暇の日数
+   		if(stristr($holiday[$key],"1") !== false){
+			$syoka++;
+   		}elseif(stristr($holiday[$key],"2")!==false){
+   		//振休日数の取得
+   			$transfer_holiday++;
+   		}elseif(stristr($holiday[$key],"3")!==false){
+   		//特別休暇日数の取得
+   			$special_holiday++;
+   		}elseif(stristr($holiday[$key],"4") !== false){
+		//前半休の日数
+			$zenhan++;
+   		}elseif(stristr($holiday[$key],"5") !== false){
+   		//後半休の日数
+			$kouhan++;
+		}
+   	//半休は0.5日のため２で割る
+	//有給残数を求める
+	$yukyuzan=$yukyu-$syoka-($zenhan/2)-($kouhan/2);
+	}
 }
 
 //欠勤日数の取得
 if(isset($syukkin_nissuu)){
-$kekkin = $eigyoubi - $syukkin_nissuu - $kai - $syoka;
-}
-//遅刻回数の日数
-if(isset($bikou)){
-$tikoku=0;
-foreach($bikou as $key =>$val){
-   if(stristr($bikou[$key],"遅刻") !== false){
-      $tikoku++;
-   }
-}
-//早退回数の日数
-$soutai=0;
-foreach($bikou as $key =>$val){
-   if(stristr($bikou[$key],"早退") !== false){
-      $soutai++;
-   }
-}
-}
-//遅刻・早退を足して３回以上(３の倍数)の時、欠勤とする。
-if(isset($tikoku)|| isset($soutai)){
-$batu="";
-$bassoku=$tikoku+$soutai;
-if($bassoku >= 3){
-	if($bassoku % 3 === 0){
-		$kekkin++;
+	$kekkin = $eigyoubi - $syukkin_nissuu - $syoka - $transfer_holiday - $special_holiday;
+	if($kekkin < 0){
+		$kekkin=0;
 	}
 }
+
+
+//遅刻/早退回数の日数
+$tikoku=0;
+$soutai=0;
+if(isset($bikou)){
+	foreach($bikou as $key =>$val){
+   		if(stristr($bikou[$key],"遅刻") !== false){
+   		//遅刻回数の日数
+      		$tikoku++;
+   		}elseif(stristr($bikou[$key],"早退") !== false){
+   		//早退回数の日数
+      		$soutai++;
+   		}
+	}
 }
-if(isset($holiday)){
-//前半休の日数
-$y_mae=0;
-foreach($holiday as $key =>$val){
-   if(stristr($holiday[$key],"4") !== false){
-      $y_mae++;
-   }
-}
-// 後半休の日数
-$y_ato=0;
-foreach($holiday as $key =>$val){
-   if(stristr($holiday[$key],"5") !== false){
-      $y_ato++;
-   }
-}
-//半休は0.5日のため２で割る
-//有給残数を求める
-$yukyuzan=$yukyu-$syoka-($y_mae/2)-($y_ato/2);
-$_SESSION['yukyuzan']=$yukyuzan;
-}
+
+//遅刻・早退を足して３回以上(３の倍数)の時、欠勤とする。
+if(isset($tikoku)|| isset($soutai)){
+	$bassoku=$tikoku+$soutai;
+	if($bassoku >= 3){
+		if($bassoku % 3 === 0){
+			$kekkin++;
+		}
+	}
 }
 
 //不足時間の計算
@@ -170,9 +152,12 @@ $diff_hour2=$diff_hour-$diff_hour1;
 //求まった勤務時間から営業日数をかけ１ヶ月の所定労働時間を算出する
 $fusoku=$diff_hour2*$eigyoubi;
 
-$kyuuka_keisann="";
-//総作業時間の算出
-$kyuuka_keisan = ($syoka * $diff_hour2) + ($kai * $diff_hour2) + ($tokkyu * $diff_hour2);
+//不足時間の合計
+if($syoka==0 && $transfer_holiday==0 && $special_holiday==0){
+	$fusoku=$diff_hour2*$eigyoubi;
+}else{
+	$fusoku=$diff_hour2*$eigyoubi - ($syoka * $diff_hour2) -($transfer_holiday * $diff_hour2) - ($special_holiday * $diff_hour2);
+}
 
 ?>
 
@@ -196,8 +181,8 @@ $kyuuka_keisan = ($syoka * $diff_hour2) + ($kai * $diff_hour2) + ($tokkyu * $dif
 		else{?>
 			0<?}?>日</td>
 		<th>振休日数</th>
-		<td><?if(!empty($kai)){
-			print $kai;
+		<td><?if(!empty($transfer_holiday)){
+			print $transfer_holiday;
 			}else{?>
 			0
 			<?}?>日</td>
