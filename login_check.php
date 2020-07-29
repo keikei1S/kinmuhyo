@@ -60,9 +60,9 @@ $hash=password_hash($pass,PASSWORD_DEFAULT);
 try
 {
 //DB接続
-$dsn='mysql:dbname=kinmuhyo;host=localhost;charset=utf8';
-$user='root';
-$password='';
+$dsn='mysql:dbname=pros-service_kinmu;host=mysql731.db.sakura.ne.jp;charset=utf8';
+$user='pros-service';
+$password='cl6cNJs2lt5W';
 $dbh= new PDO($dsn,$user,$password);
 $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 		

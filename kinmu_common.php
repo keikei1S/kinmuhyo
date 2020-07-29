@@ -24,9 +24,9 @@ class kinmu_common{
 	public static function Kinmuhyo($staff_number){
 	$rec = false;
 
-	$dsn='mysql:dbname=kinmuhyo;host=localhost;charset=utf8';
-	$user='root';
-	$password='';
+	$dsn='mysql:dbname=pros-service_kinmu;host=mysql731.db.sakura.ne.jp;charset=utf8';
+	$user='pros-service';
+	$password='cl6cNJs2lt5W';
 	$dbh= new PDO($dsn,$user,$password);
 	$dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 	$sql="SELECT * FROM TBL_SUMMARY WHERE staff_number=? ";
@@ -49,9 +49,9 @@ class kinmu_common{
 	public static function work_tbl($staff_number){
 	$rec = false;
 
-	$dsn='mysql:dbname=kinmuhyo;host=localhost;charset=utf8';
-	$user='root';
-	$password='';
+	$dsn='mysql:dbname=pros-service_kinmu;host=mysql731.db.sakura.ne.jp;charset=utf8';
+	$user='pros-service';
+	$password='cl6cNJs2lt5W';
 	$dbh= new PDO($dsn,$user,$password);
 	$dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 	$sql="SELECT work_name FROM `TBL_BELONGSS` WHERE 1";
@@ -78,9 +78,9 @@ class kinmu_common{
 	$e_year_and_month = date("Y-").$_SESSION['month'].date("-".$now_month);
 	date_default_timezone_set('Asia/Tokyo');
 	$rec = false;
-	$dsn='mysql:dbname=kinmuhyo;host=localhost;charset=utf8';
-	$user='root';
-	$password='';
+	$dsn='mysql:dbname=pros-service_kinmu;host=mysql731.db.sakura.ne.jp;charset=utf8';
+	$user='pros-service';
+	$password='cl6cNJs2lt5W';
 	$dbh= new PDO($dsn,$user,$password);
 	$dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 	$sql="SELECT * FROM `TBL_ATTENDANCE` WHERE staff_number=:staff_number AND year_and_month BETWEEN :s_year_and_month AND :e_year_and_month";
@@ -105,9 +105,9 @@ class kinmu_common{
 	public static function BELONGSS($work_id){
 	$rec = false;
 
-	$dsn='mysql:dbname=kinmuhyo;host=localhost;charset=utf8';
-	$user='root';
-	$password='';
+	$dsn='mysql:dbname=pros-service_kinmu;host=mysql731.db.sakura.ne.jp;charset=utf8';
+	$user='pros-service';
+	$password='cl6cNJs2lt5W';
 	$dbh= new PDO($dsn,$user,$password);
 	$dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 	$sql="SELECT * FROM TBL_BELONGSS WHERE work_id=?";
@@ -133,9 +133,9 @@ class kinmu_common{
 	$s_year_and_month = date("Y-").$_SESSION['month'].date("-01");
 	$now_month = date('t', strtotime($s_year_and_month));
 	$e_year_and_month = date("Y-").$_SESSION['month'].date("-".$now_month);
-	$dsn='mysql:dbname=kinmuhyo;host=localhost;charset=utf8';
-	$user='root';
-	$password='';
+	$dsn='mysql:dbname=pros-service_kinmu;host=mysql731.db.sakura.ne.jp;charset=utf8';
+	$user='pros-service';
+	$password='cl6cNJs2lt5W';
 	$dbh= new PDO($dsn,$user,$password);
 	$dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 	$sql="SELECT sum( time_to_sec(total)) as total_sec, sec_to_time(sum( time_to_sec(total))) as total_time from TBL_ATTENDANCE WHERE staff_number=:staff_number AND year_and_month BETWEEN :s_year_and_month AND :e_year_and_month";
@@ -163,9 +163,9 @@ class kinmu_common{
 	$s_year_and_month = date("Y-").$_SESSION['month'].date("-01");
 	$now_month = date('t', strtotime($s_year_and_month));
 	$e_year_and_month = date("Y-").$_SESSION['month'].date("-".$now_month);
-	$dsn='mysql:dbname=kinmuhyo;host=localhost;charset=utf8';
-	$user='root';
-	$password='';
+	$dsn='mysql:dbname=pros-service_kinmu;host=mysql731.db.sakura.ne.jp;charset=utf8';
+	$user='pros-service';
+	$password='cl6cNJs2lt5W';
 	$dbh= new PDO($dsn,$user,$password);
 	$dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 	$sql="SELECT sum( time_to_sec(overtime_normal)) as total_sec, sec_to_time(sum( time_to_sec(overtime_normal))) as total_time from TBL_ATTENDANCE WHERE staff_number=:staff_number AND year_and_month BETWEEN :s_year_and_month AND :e_year_and_month";
@@ -193,9 +193,9 @@ class kinmu_common{
 	$s_year_and_month = date("Y-").$_SESSION['month'].date("-01");
 	$now_month = date('t', strtotime($s_year_and_month));
 	$e_year_and_month = date("Y-").$_SESSION['month'].date("-".$now_month);
-	$dsn='mysql:dbname=kinmuhyo;host=localhost;charset=utf8';
-	$user='root';
-	$password='';
+	$dsn='mysql:dbname=pros-service_kinmu;host=mysql731.db.sakura.ne.jp;charset=utf8';
+	$user='pros-service';
+	$password='cl6cNJs2lt5W';
 	$dbh= new PDO($dsn,$user,$password);
 	$dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 	$sql="SELECT sum( time_to_sec(overtime_night)) as total_sec, sec_to_time(sum( time_to_sec(overtime_night))) as total_time from TBL_ATTENDANCE WHERE staff_number=:staff_number AND year_and_month BETWEEN :s_year_and_month AND :e_year_and_month";
@@ -223,9 +223,9 @@ class kinmu_common{
 	$s_year_and_month = date("Y-").$_SESSION['month'].date("-01");
 	$now_month = date('t', strtotime($s_year_and_month));
 	$e_year_and_month = date("Y-").$_SESSION['month'].date("-".$now_month);
-	$dsn='mysql:dbname=kinmuhyo;host=localhost;charset=utf8';
-	$user='root';
-	$password='';
+	$dsn='mysql:dbname=pros-service_kinmu;host=mysql731.db.sakura.ne.jp;charset=utf8';
+	$user='pros-service';
+	$password='cl6cNJs2lt5W';
 	$dbh= new PDO($dsn,$user,$password);
 	$dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 	$sql="SELECT sum( time_to_sec(short)) as total_sec, sec_to_time(sum( time_to_sec(short))) as total_time from TBL_ATTENDANCE WHERE staff_number=:staff_number AND year_and_month BETWEEN :s_year_and_month AND :e_year_and_month";
@@ -250,9 +250,9 @@ class kinmu_common{
 public static function INSERT_Summary($staff_number){
 	$s_year_and_month = date("Y-").$_SESSION['month'].date("-01");
 	try{
-	$dsn='mysql:dbname=kinmuhyo;host=localhost;charset=utf8';
-	$user='root';
-	$password='';
+	$dsn='mysql:dbname=pros-service_kinmu;host=mysql731.db.sakura.ne.jp;charset=utf8';
+	$user='pros-service';
+	$password='cl6cNJs2lt5W';
 	$dbh= new PDO($dsn,$user,$password);
 	$dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 	$sql="INSERT INTO `TBL_SUMMARY`(`staff_number`, `year_and_month`, `work_ID`, `remaining_paid_days`, `status`, `opening_hours`, `closing_hours`, `create_date`, `update_date`) VALUES (:staff_number, :year_and_month, :work_ID, :remaining_paid_days, :status, :opening_hours, :closing_hours, now(), now())on duplicate key update staff_number=:staff_number, year_and_month = :year_and_month, work_ID = :work_ID, remaining_paid_days = :remaining_paid_days, status = :status, opening_hours = :opening_hours, closing_hours = :closing_hours";
@@ -275,9 +275,9 @@ class kinmu_holiday{
 	public static function Holiday($q){
 	$q = false;
 	try{
-		$dsn='mysql:dbname=kinmuhyo;host=localhost;charset=utf8';
-		$user='root';
-		$password='';
+		$dsn='mysql:dbname=pros-service_kinmu;host=mysql731.db.sakura.ne.jp;charset=utf8';
+		$user='pros-service';
+		$password='cl6cNJs2lt5W';
 		$dbh= new PDO($dsn,$user,$password);
 		$dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 		$sql='SELECT * FROM TBL_HOLIDAY';
