@@ -20,23 +20,7 @@ if (isset($_SESSION["login"])==false) {
 }
 //ファイル読み込み	(DB接続クラス)
 require'kinmu_common.php';
-//初期表示は今月
-// if(empty($_SESSION["month"])){
-// 	$_SESSION["month"]=date('m');
-// }
-// if(isset($_POST["show"])){
-// 	if($_POST["show"]=="1"){
-// 		$_SESSION["month"]=date('m');
-// 	}elseif($_POST["show"]=="2"){
-// 		$_SESSION["month"]=date('m', strtotime('-1 month'));
-// 	}else{
-// 		if($_SESSION["month"]==date('m')){
-// 			$_SESSION["month"]=date('m');
-// 		}else{
-// 		$_SESSION["month"]=date('m', strtotime('-1 month'));
-// 		}
-// 	}
-// }
+
 //ユーザー情報の読み込み S////////
 //ログイン画面からセッションで引き継がれた値を変数に格納
 //社員テーブルS///
@@ -192,6 +176,12 @@ $kinmuhyo_holiday= kinmu_holiday::Holiday("");
 		$count_syuku=count($sum_syuku);
 	}
 	//カレンダー作成E///
+
+	//チェックの結果エラーメッセージがあれば変数に格納
+	if(isset($_SESSION['err_msg'])){
+		$err_msg=$_SESSION['err_msg'];
+		$check=$_SESSION['check'];
+	}
 ?>
 <div class="img">
 	<img src="/img/image_2020_4_10.png" height="100" width="100" alt="ロゴ" align="right" >
@@ -707,7 +697,7 @@ eof;
 					}
 					//エラーメッセージ
 	        	if(isset($err_msg[$value['day']-1])){
-	        		foreach ((array)$err_msg as $n_msg => $msg) {
+	        		foreach ($err_msg as $n_msg => $msg) {
 	        			if($value['day']-1==$n_msg){
 	        				print $msg;
 	        			}
@@ -732,7 +722,7 @@ eof;
 	        	<?
 	        	//チェック結果表示域
 	        	if(!empty($check[$value['day']-1])){
-	        		foreach ((array)$check as $c_key => $chk) {
+	        		foreach ($check as $c_key => $chk) {
 	        			if($value['day']-1==$c_key){
 	        				print $chk;
 	        			}
@@ -756,10 +746,6 @@ eof;
 	        </td>
 	    </tr>
 	 <?}}?>
-	<!-- チェックの結果エラーメッセージがあれば変数に格納 -->
-	<?$err_msg=isset($_SESSION['err_msg']);
-	$check=isset($_SESSION['check']);
-	?>
 	<input name="tochu" type="submit" value="保存">
 	</form>
 </table>
@@ -822,3 +808,7 @@ $eigyoubi = $value['day']-count($kyuujitu);
 ?>
 </body>
 </html>
+<?
+unset($_SESSION['err_msg']);
+unset($_SESSION['check']);
+?>

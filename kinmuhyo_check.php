@@ -142,6 +142,13 @@ for($i = 0; $i < $now_month ; $i++){
 			}
 		}
 	}
+	//エラーメッセージがある場合、insertせず、勤務表画面に返す。
+	if(isset($err_msg[$i])){
+		$_SESSION['err_msg']=$err_msg;
+		$_SESSION['check']=$check;
+		header('Location:kinmuhyo.php');
+		exit;
+	}
 	if($check[$i]=="OK"){
 //入力された時間の表示形式を修正//S
 		if($open[$i]==""){
@@ -317,6 +324,13 @@ for($i = 0; $i < $now_month ; $i++){
 				$check[$i]="OK";
 			}
 		}
+	}
+	//エラーメッセージがある場合、insertせず、勤務表画面に返す。
+	if(isset($err_msg[$i])){
+		$_SESSION['err_msg']=$err_msg;
+		$_SESSION['check']=$check;
+		header('Location:kinmuhyo.php');
+		exit;
 	}
 	if($check[$i]=="OK"){
 		// 休憩時間の処理s//
@@ -619,7 +633,6 @@ for($i = 0; $i < $now_month ; $i++){
 				$bikou[$i]="後・遅刻早退";
 				}
 			}
-			// $check[$i]="OK";
 		}
 		//土曜日の残業時間s//
 		if($week_day4[$i]===$kensaku[$i]){
@@ -738,18 +751,46 @@ for($i = 0; $i < $now_month ; $i++){
 			}
 	//チェックOKのみe//
 	}
+	if($holiday[$i]=="1"){
+		$bikou[$i]="有休";
+		$open[$i]="00";
+		$open2[$i]="00";
+		$close[$i]="00";
+		$close2[$i]="00";
+		$rest[$i]="00";
+		$rest2[$i]="00";
+		$total[$i]="00";
+		$check[$i]="OK";
+	}elseif($holiday[$i]=="2"){
+		$bikou[$i]="振休";
+		$open[$i]="00";
+		$open2[$i]="00";
+		$close[$i]="00";
+		$close2[$i]="00";
+		$rest[$i]="00";
+		$rest2[$i]="00";
+		$total[$i]="00";
+		$check[$i]="OK";
+	}elseif($holiday[$i]=="3"){
+		$bikou[$i]="特休";
+		$open[$i]="00";
+		$open2[$i]="00";
+		$close[$i]="00";
+		$close2[$i]="00";
+		$rest[$i]="00";
+		$rest2[$i]="00";
+		$total[$i]="00";
+		$check[$i]="OK";
+	}
 	//勤務時間の入力がなければ何も入れない
 	if($open[$i]=="00"&& $close[$i]=="00" && $open2[$i]=="00"&& $close2[$i]=="00"){
 		$Shortage[$i]="00:00";
-		$check[$i]="";
+		if($holiday[$i]=="1" || $holiday[$i]=="2" || $holiday[$i]=="3"){
+			$check[$i]="OK";
+		}else{
+			$check[$i]="";
+		}
 	}	
-	//エラーメッセージがある場合、insertせず、勤務表画面に返す。
-	if(isset($err_msg[$i])){
-		$_SESSION['err_msg']=$err_msg[$i];
-		$_SESSION['check']=$check[$i];
-		header('Location:kinmuhyo.php');
-		exit;
-	}
 	if($close[$i]>='24'){
 			switch ($close[$i]) {
 			//終業時間が以下の場合、closeに+24時間する
