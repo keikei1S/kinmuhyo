@@ -2,6 +2,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<link rel="stylesheet" href="/css/kinmu_summary.css">
 <title>勤務表</title>
 </head>
 <body>
@@ -9,12 +10,19 @@
 //セッションが開始されていなければセッションを開始する。
 if(!isset($_SESSION)){
 	session_start();
+session_regenerate_id(true);
+}
+if (isset($_SESSION["login"])==false)
+{
+	header("Location: staff_login.php");
+	exit();
 }
 //ファイル読み込み	(勤務表)
-ob_start();
-include("kinmuhyo.php");
-ob_clean();
-
+//if($_SERVER['HTTP_REFERER']!="https://www.pros-service.co.jp/kinmu/list_of_members.php"){
+if($_SERVER['HTTP_REFERER']!="http://localhost:8080/kinmuhyo/list_of_members.php"){
+	ob_start();
+	include("kinmuhyo.php");
+	ob_clean();
 //先月か今月の判定
 if(isset($_POST['show'])==""){?>
 	<h3><?php print $now_month?>月分勤務表</h3>
@@ -50,11 +58,26 @@ print <<<eof
 <input name="nengetshu" type="submit" value="表示">
 </form>
 eof;
+}
 //先月か今月を選択するプルダウン生成E//
+//出勤日計算
+if(isset($check_result)){
+	$syukkin_nissuu="";
+	foreach($check_result as $key =>$val){
+  		if(stristr($check_result[$key],"OK") !== false){
+      		$syukkin_nissuu++;
+   		}
+    	if(stristr($holiday[$key],"NULL") !== false){
 
+   		}
+		}
+}else{
+	$syukkin_nissuu=0;
+}
 //休暇日数の計算
 //初期値は0
  $kyuuka_nissuu=0;
+ $absence=0;
  if(isset($holiday)){
 	foreach($holiday as $key =>$val){
   		if(stristr($holiday[$key],"1") !== false){
@@ -66,10 +89,15 @@ eof;
    		if(stristr($holiday[$key],"3") !== false){
       		$kyuuka_nissuu++;
    		}
+			if(stristr($holiday[$key],"6") !== false){
+				//欠勤日数の取得
+					$absence++;
+			}
 	}
 }
-if($kyuuka_nissuu!=""){
-$syukkin_nissuu=$syukkin_nissuu-$kyuuka_nissuu;
+
+if($kyuuka_nissuu!="" || $absence!=""){
+$syukkin_nissuu = $syukkin_nissuu-$kyuuka_nissuu-$absence;
 }
 //有給日数の計算
 $syoka=0;
@@ -81,7 +109,7 @@ if(isset($holiday)){
 	foreach($holiday as $key =>$val){
 		//有給休暇の日数
    		if(stristr($holiday[$key],"1") !== false){
-			$syoka++;
+				$syoka++;
    		}elseif(stristr($holiday[$key],"2")!==false){
    		//振休日数の取得
    			$transfer_holiday++;
@@ -90,15 +118,29 @@ if(isset($holiday)){
    			$special_holiday++;
    		}elseif(stristr($holiday[$key],"4") !== false){
 		//前半休の日数
-			$zenhan++;
+				$zenhan++;
    		}elseif(stristr($holiday[$key],"5") !== false){
    		//後半休の日数
-			$kouhan++;
-		}
+				$kouhan++;
+			}
    	//半休は0.5日のため２で割る
 	//有給残数を求める
-	$yukyuzan=$yukyu-$syoka-($zenhan/2)-($kouhan/2);
+	//当月データありかつ勤務表未提出
+	if($year_and_month==$comparison_month){
+	 	if($kinmuhyo_summary['status']!="3" || $kinmuhyo_summary['status']!="4"){
+			$yukyuzan= $yukyu-$syoka-($zenhan/2)-($kouhan/2);
+	//当月データありかつ勤務表提出済
+		}else{
+			//その月にあった有給残数を表示したい
+			$yukyuzan = $kinmuhyo_summary['remaining_paid_days'];
+		}
 	}
+	}
+}
+if($zenhan!=0 || $kouhan!=0){
+		$yuukyu_syoka = $syoka+($zenhan/2)+($kouhan/2);
+}else{
+	$yuukyu_syoka=$syoka;
 }
 
 //欠勤日数の取得
@@ -115,7 +157,11 @@ $tikoku=0;
 $soutai=0;
 if(isset($bikou)){
 	foreach($bikou as $key =>$val){
-   		if(stristr($bikou[$key],"遅刻") !== false){
+		if(stristr($bikou[$key],"遅刻早退") !== false){
+			//遅刻・早退回数の日数
+   			$tikoku++;
+      		$soutai++;
+   		}elseif(stristr($bikou[$key],"遅刻") !== false){
    		//遅刻回数の日数
       		$tikoku++;
    		}elseif(stristr($bikou[$key],"早退") !== false){
@@ -125,43 +171,155 @@ if(isset($bikou)){
 	}
 }
 
-//遅刻・早退を足して３回以上(３の倍数)の時、欠勤とする。
-if(isset($tikoku)|| isset($soutai)){
-	$bassoku=$tikoku+$soutai;
-	if($bassoku >= 3){
-		if($bassoku % 3 === 0){
-			$kekkin++;
+// //遅刻・早退を足して３回以上(３の倍数)の時、欠勤とする。
+// if(isset($tikoku)|| isset($soutai)){
+// 	$bassoku=$tikoku+$soutai;
+// 	if($bassoku >= 3){
+// 		//変数の初期化
+// 		$i = 1;
+// 	//ループ処理を$iが$bassokuの値になるまで実行する
+// 		while ($i <= $bassoku){
+//   		//$iを3で割った時のあまりが0になる時
+//   			if ($i % 3 == 0){
+//     			$kekkin++;
+//     		}
+//   			$i++;
+// 		}
+//
+// 	}
+// }
+//不足時間の計算
+//勤務地ごとの所定労働時間
+$start = new DateTime($opening, new DateTimeZone('Asia/Tokyo'));
+$stop= $start->diff(new DateTime($closong, new DateTimeZone('Asia/Tokyo')))->format('%H:%I');
+
+//勤務地の休憩時間
+$stop1= "01:00";
+//所定労働時間から休憩時間を引く
+$start2 = new DateTime($stop, new DateTimeZone('Asia/Tokyo'));
+$stop2= $start2->diff(new DateTime($stop1, new DateTimeZone('Asia/Tokyo')))->format('%H:%I');
+//求まった勤務時間から営業日数をかけ１ヶ月の所定労働時間を算出する
+//不足時間の合計
+//所定労働時間が７時間半の場合7.5に変更
+if($stop2=="07:30"){
+	$stop2="7.5";
+}
+
+//秒に直す
+	$sum_fusoku = (float)$stop2*$eigyoubi * 3600 ;
+//時間に直す
+	$fusoku= floor($sum_fusoku / 3600) . gmdate(":i:s", $sum_fusoku);
+//営業日*所定労働時間数＝不足時間
+	$fusoku=substr($fusoku, 0, -3);
+
+//有給フラグがある場合、有給時間数を求める
+if($syoka!=0 || $transfer_holiday!=0 || $special_holiday!=0 || $zenhan!=0 || $kouhan!=0){
+	$sum = $sum_fusoku - (float)$stop2*$syoka * 3600 - (float)$stop2*$transfer_holiday * 3600 - (float)$stop2*$special_holiday * 3600 - 4 * $zenhan * 3600 -  4 * $kouhan * 3600;
+	$sum2= floor($sum / 3600) . gmdate(":i:s", $sum);
+	//上記で求めた不足時間-休暇日数*所定労働時間=休暇を考慮した不足時間
+	$fusoku=substr($sum2, 0, -3);
+}
+//実働合計から不足時間を引く
+if($syoka==0 && $transfer_holiday==0 && $special_holiday==0 && $zenhan==0 && $kouhan==0){
+	if(isset($sum_total["total_time"])){
+		if($fusoku > $sum_total["total_time"]){
+			$objDatetime1 = new DateTime(date(("Y/m/d H:i"), mktime(explode(":", $fusoku)[0],explode(":", $fusoku)[1])));
+			$objDatetime2 = new DateTime(date(("Y/m/d H:i"), mktime(explode(":", $sum_total["total_time"])[0],explode(":", $sum_total["total_time"])[1])));
+			$objInterval = $objDatetime1->diff($objDatetime2);
+			$fusoku1 = $objInterval->format('%d');
+			$fusoku2 = $objInterval->format('%H:%I');
+			//不足時間が24時間を超える場合
+			if($fusoku1!="0"){
+				$fusoku = $objInterval->format('%H:%I');
+				$sum_fusoku= $fusoku1 * 2400;
+				$sum_fusoku = $sum_fusoku * 3600;
+				$sum_fusoku= floor($sum_fusoku / 360000) . gmdate(":i:s", $sum_fusoku);
+				$sum_fusoku=substr($sum_fusoku, 0, -3);
+				$tArry=explode(":",$sum_fusoku);
+				$fusoku3=explode(":",$fusoku2);
+				$hour=$tArry[0]*60 + $fusoku3[0]*60;//時間→分
+				$mins=$hour+$tArry[1]+$fusoku3[1];//分だけを足す
+				function change_time_format($mm) {
+    				return sprintf("%02d:%02d", floor($mm/60), $mm%60);
+				}
+				$mm = $mins;
+				$fusoku =change_time_format($mm);
+				//不足時間が24時間未満
+			}else{
+				$fusoku = $objInterval->format('%H:%I');
+			}
+			//実働時間 > 不足時間の場合
+		}else{
+			$fusoku="00:00";
+		}
+	}
+//有給フラグがある場合
+}else{
+	if(isset($sum_total["total_time"])){
+		if($fusoku >= $sum_total["total_time"]){
+			$objDatetime1 = new DateTime(date(("Y/m/d H:i"), mktime(explode(":", $fusoku)[0],explode(":", $fusoku)[1])));
+			$objDatetime2 = new DateTime(date(("Y/m/d H:i"), mktime(explode(":", $sum_total["total_time"])[0],explode(":", $sum_total["total_time"])[1])));
+			$objInterval = $objDatetime1->diff($objDatetime2);
+			$fusoku1 = $objInterval->format('%d');
+			$fusoku2 = $objInterval->format('%H:%I');
+
+			if($fusoku1!="0"){
+				$fusoku = $objInterval->format('%H:%I');
+				$sum_fusoku= $fusoku1 * 2400;
+				$sum_fusoku = $sum_fusoku * 3600;
+				$sum_fusoku= floor($sum_fusoku / 360000) . gmdate(":i:s", $sum_fusoku);
+				$sum_fusoku=substr($sum_fusoku, 0, -3);
+				$tArry=explode(":",$sum_fusoku);
+				$fusoku3=explode(":",$fusoku2);
+				$hour=$tArry[0]*60 + $fusoku3[0]*60;//時間→分
+				$mins=$hour+$tArry[1]+$fusoku3[1];//分だけを足す
+				function change_time_format($mm) {
+    				return sprintf("%02d:%02d", floor($mm/60), $mm%60);
+				}
+				$mm = $mins;
+				$fusoku =change_time_format($mm);
+			}else{
+				$fusoku = $objInterval->format('%H:%I');
+			}
+		}else{
+			$fusoku="00:00";
 		}
 	}
 }
-
-//不足時間の計算
-//勤務地ごとの所定労働時間
-$date1 = date("2020-01-01". $opening);
-$date2 = date("2020-01-01". $closong);
-$diff_hour = (strtotime($date2) - strtotime($date1)) / 3600;
-
-//勤務地の休憩時間
-$date3 = date("2020-01-01". $break_start);
-$date4 = date("2020-01-01". $break_end);
-$diff_hour1 = (strtotime($date4) - strtotime($date3)) / 3600;
-
-//休憩時間を引く
-$diff_hour2=$diff_hour-$diff_hour1;
-
-//求まった勤務時間から営業日数をかけ１ヶ月の所定労働時間を算出する
-$fusoku=$diff_hour2*$eigyoubi;
-
-//不足時間の合計
-if($syoka==0 && $transfer_holiday==0 && $special_holiday==0){
-	$fusoku=$diff_hour2*$eigyoubi;
-}else{
-	$fusoku=$diff_hour2*$eigyoubi - ($syoka * $diff_hour2) -($transfer_holiday * $diff_hour2) - ($special_holiday * $diff_hour2);
+//有給時間を差し引いた不足分と実働合計を比較し、実働合計が不足より大きい場合不足に０を代入
+if(isset($sum3)){
+	if($sum3 <= $sum_total["total_time"]){
+		$fusoku="00:00";
+	}
 }
-
 ?>
-
-<table border="1">
+<? //if($_SERVER['HTTP_REFERER']=="https://www.pros-service.co.jp/kinmu/list_of_members.php"){
+	if($_SERVER['HTTP_REFERER']=="http://localhost:8080/kinmuhyo/list_of_members.php"){?>
+	<table border="1" class="tbl_summary td">
+	<tr>
+		<th>　氏名　
+			<td><?php print $staff_name;?>
+			</td>
+		</th>
+	</tr>
+	<tr>
+		<th>勤務地</th>
+			<?if($work_id!=""){?>
+				<td><?=$work_name ?></td>
+			<?}else{?>
+				<td>
+					<? for ($i=0; $i < count($work_tbl); $i++) {
+							print "<select name='work'>";
+								print "<option>".""."</option>";
+								print "<option>".$work_tbl."</option>";
+							print "</select>";
+						}?>
+				</td>
+			<?}?>
+	</tr>
+</table>
+<?}?>
+<table border="1" align="left" class="tbl_summary">
 	<tr>
 		<th>執務日数</th>
 		<td><?if(!empty($eigyoubi)){
@@ -204,7 +362,7 @@ if($syoka==0 && $transfer_holiday==0 && $special_holiday==0){
 		<td>
 			<?if($sum_overtime["total_time"]!=""){
 				if($sum_overtime["total_time"]!="00:00"){
-				print $sum_overtime["total_time"];
+				print explode(":", $sum_overtime["total_time"])[0].":".explode(":", $sum_overtime["total_time"])[1];
 				}else{
 					print "00:00";
 				}
@@ -216,7 +374,7 @@ if($syoka==0 && $transfer_holiday==0 && $special_holiday==0){
 		<td>
 			<?if($sum_overtime_night["total_time"]!=""){
 				if($sum_overtime_night["total_time"]!="00:00"){
-				print $sum_overtime_night["total_time"];
+				print explode(":", $sum_overtime_night["total_time"])[0].":".explode(":", $sum_overtime_night["total_time"])[1];
 				}else{
 					print "00:00";
 				}
@@ -227,27 +385,27 @@ if($syoka==0 && $transfer_holiday==0 && $special_holiday==0){
 	</tr>
 	<tr>
 		<th>有給日数</th>
-		<td><?if(!empty($syoka)){
-			print $syoka;
+		<td><?if(!empty($yuukyu_syoka)){
+			print $yuukyu_syoka;
 		}else{?>
 			0
 			<?}?>日</td>
 		<th>前半休</th>
-		<td><?if(!empty($y_mae)){
-			print $y_mae;
+		<td><?if(!empty($zenhan)){
+			print $zenhan;
 		}else{?>
 			0
 		<?}?>日</td>
 		<th>後半休</th>
-		<td><?if(!empty($y_ato)){
-			print $y_ato;
+		<td><?if(!empty($kouhan)){
+			print $kouhan;
 		}else{?>
 			0
 		<?}?>日</td>
 		<th>総作業時間</th>
 		<td>
 			<?if($sum_total["total_time"]!=""){
-				print $sum_total["total_time"];
+					print explode(":", $sum_total["total_time"])[0].":".explode(":", $sum_total["total_time"])[1];
 				}else{
 					print "00:00";
 				}?>
@@ -255,22 +413,71 @@ if($syoka==0 && $transfer_holiday==0 && $special_holiday==0){
 	</tr>
 	<tr>
 		<th>有給残日数</th>
-		<td><?if(!empty($yukyuzan)){
-			print $yukyuzan;
-		}else{
-			print $yukyu;
-		}?>日</td>
-		<th></th>
-		<td></td>
+		<td><?if($kinmuhyo_summary['status']==4){
+			print $kinmuhyo_summary['remaining_paid_days'];
+		}elseif(isset($yukyuzan)){
+				print $yukyuzan;
+			}elseif(isset($_SESSION["yukyuzan"])){
+				print $_SESSION["yukyuzan"];
+			}else{
+				print $yukyu;
+			}?>日</td>
+		<th>特休日数</th>
+		<td><?if(!empty($special_holiday)){
+			print $special_holiday;
+		}else{?>
+			0
+		<?}?>日</td>
 		<th></th>
 		<td></td>
 		<th>不足時間</th>
 		<td><?=$fusoku?></td>
 	</tr>
 </table>
-
-<p>
-<a href="kinmuhyo.php">明細を入力する</a>
-
+<?//if($_SERVER['HTTP_REFERER']!="https://www.pros-service.co.jp/kinmu/list_of_members.php"){
+	if($_SERVER['HTTP_REFERER']!="http://localhost:8080/kinmuhyo/list_of_members.php"){?>
+	<p>
+	<a href="kinmuhyo.php">明細を入力する</a>
+<?}else{?>
+	<div class="box">担当印
+	<?if($kinmuhyo_summary['status']!="0" || $kinmuhyo_summary['status']!="1"){?>
+		<div class="stamp stamp-approve">
+			<span><? print $kinmuhyo_summary['send_date']?></span>
+			<span><? print $staff_name?></span>
+		</div>
+	<?}?>
+	</div>
+	<div class="box">責任者確認印
+		<div class="stamp stamp-approve">
+			<span><? print $kinmuhyo_summary['send_date']?></span>
+			<span>軽部</span>
+		</div>
+	</div>
+<?}?>
 </body>
 </html>
+<style type="text/css">
+.box{
+	margin-top: -20px;
+	float: right;
+	width: 130px;
+	height: 130px;
+	font-weight: bold;
+    border: solid 3px #000000;
+    text-align: center;
+}
+.stamp { font-size:13px; border:3px double #f00; border-radius:50%; color:#f00; width:100px; height:100px; position:relative; margin:auto; }
+.stamp span { display:inline-block; width:100%; text-align:center; }
+.stamp span:first-child::before { position:absolute; top:50px; left:0; right:0; margin:auto; width:100%; border-bottom:1px line-height:1; padding-bottom:10px; }
+.stamp span:first-child { line-height:60px; }
+.stamp span:last-child { position:absolute; top:50px; left:0; right:0; margin:auto; width:80%; border-top:1px solid #f00; padding-top:10px; line-height:1; }
+
+#square-button {
+  width: 80px;
+  height: 80px;
+  background: #232323;
+}
+#square-button.blue {
+  background: #21759b;
+}
+</style>

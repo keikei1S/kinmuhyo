@@ -1,116 +1,110 @@
 <?php
-session_start();
-//$post=sanitize($_POST);
+if(!isset($_SESSION)){
+	session_start();
+}
+ob_start();
+include("kinmu_common.php");
+ob_clean();
+//今日日付を取得し、退職日と比較する
+$today = date("Y-m-d");
 //値を変数に格納
-$staff_number=$_POST['staff_number'];
-$pass=$_POST['pass'];
+if(!isset($_POST)){
+	header("Location: staff_login.php");
+	exit();
+}else{
+	$staff_number=$_POST['staff_number'];
+	$pass=$_POST['pass'];
+}
 
 $staff_number=htmlspecialchars($staff_number,ENT_QUOTES,'UTF-8');
 $pass=htmlspecialchars($pass,ENT_QUOTES,'UTF-8');
 
+$err = [];
+//社員番号のエラーチェック
 if($staff_number==""){
-	$_SESSION['errMsg1'] = '入力必須項目です。<br/>';
-	header('Location:staff_login.php');
-	//exit();
+	$err['staff_number'] = '入力必須項目です。<br/>';
+}elseif(preg_match('/^([0-9]{4})$/', $staff_number) == false){
+	$err['staff_number'] =  "4桁で入力してください。";
+}elseif (preg_match("/[^0-9]/", $staff_number)) {
+	$err['staff_number'] = "半角数字で入力してください。";
 }
-elseif (preg_match("/[^0-9]/", $staff_number)) {
-	$_SESSION['errMsg1'] = "半角数字で入力してください。";
-    header('Location:staff_login.php');
-	exit();
-}
-else
-{
-	$staff_numberlength=mb_strlen($staff_number) ;
-	if (4 < $staff_numberlength || $staff_numberlength < 4)  {
-    	$_SESSION['errMsg1'] =  "4桁で入力してください。";
-    	 header('Location:staff_login.php');
-	exit();
-	}
-}
-if($staff_number=="" && $pass!=""){
-	$_SESSION['errMsg1'] = '入力必須項目です。<br/>';
-	header('Location:staff_login.php');
-	exit();
-}
+//パスワードのエラーチェック
+$passlength=mb_strlen($pass);
 if($pass==""){
-	$_SESSION['errMsg2'] = '入力必須項目です。<br/>';
-	$_SESSION['staff_number']=$staff_number;
+	$err['pass'] = '入力必須項目です。<br/>';
+}elseif($passlength < 8 || 20 < $passlength){
+	$err['pass'] ='8桁以上20桁以内で入力してください。';
+}elseif (!preg_match("/([0-9].*[a-zA-Z]|[a-zA-Z].*[0-9])/", $pass)){
+	$err['pass'] = '英字、数字混合で入力してください。';
+}
+
+if (!empty($err)) {
+	$_SESSION["st_num"] = $staff_number;
+	$_SESSION["password"] = $pass;
+	$_SESSION["err"] = $err;
 	header('Location:staff_login.php');
 	exit();
-}
-elseif (!preg_match("/^[a-zA-Z0-9]+$/", $pass)) 
-{	
-	$_SESSION['errMsg2'] = '英字、数字混合で入力してください<br/>';
-	$_SESSION['staff_number']=$staff_number;
-	header('Location:staff_login.php');
-	exit();
-}
-else
-{
-	$passlength=mb_strlen($pass);
-	if($passlength < 8 || 20 < $passlength){
-		//var_dump($pass);
-		$_SESSION['errMsg2'] ='8桁以上20桁以内で入力してください.';
-		$_SESSION['staff_number']=$staff_number;
-		header('Location:staff_login.php');
-	exit();
-	}
-}	
-$hash=password_hash($pass,PASSWORD_DEFAULT);
+}else{
 try
 {
 //DB接続
-$dsn='mysql:dbname=pros-service_kinmu;host=mysql731.db.sakura.ne.jp;charset=utf8';
-$user='pros-service';
-$password='cl6cNJs2lt5W';
-$dbh= new PDO($dsn,$user,$password);
+$dbh = db_connect();
 $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-		
-$sql="SELECT * FROM TBL_STAFF WHERE staff_number=?";
+$sql="SELECT `staff_number`, `familyname`, `firstname`,  `password`, `email`, `admin_flag`, `holiday_with_pay`, `new_work_id`, `new_start_month`, `new_end_month`, `old_work_id`, `old_start_month`, `old_end_month`,`retirement_date` FROM `TBL_STAFF` WHERE staff_number=:staff_number";
 $stmt=$dbh->prepare($sql);
-$data[]=$staff_number;
-$stmt->execute($data);
+$stmt->bindValue(":staff_number",$staff_number,PDO::PARAM_STR);
+$stmt->execute();
 $rec = $stmt -> fetch(PDO::FETCH_ASSOC);
-setcookie('st_num',$staff_number);
-setcookie('pass',$pass);
-
-
 
 $dbh=null;
-
 if($rec==false)
-{	
-	$_SESSION['errMsg1'] = '入力された社員番号は存在しません。<br/>';
+{
+	$err['staff_number'] = '入力された社員番号は存在しません。<br/>';
+	$_SESSION["st_num"] = $staff_number;
+	$_SESSION["password"] = $pass;
+	$_SESSION["err"] = $err;
+	header('Location:staff_login.php');
+	exit();
+}elseif($rec['retirement_date'] < $today){
+	$err['staff_number'] = '既に退職しています<br/>';
+	$_SESSION["st_num"] = $staff_number;
+	$_SESSION["password"] = $pass;
+	$_SESSION["err"] = $err;
 	header('Location:staff_login.php');
 	exit();
 }
-if(password_verify($rec['password'],$hash))
+//入力されたパスワードとテーブルのハッシュ値(パスワード)を比較
+if(password_verify($pass , $rec['password']))
 {
+	//セッション情報の初期化
+	$_SESSION = array();
 	$_SESSION['login']=1;
 	$_SESSION['result']=$rec;
-	// $_SESSION['familyname']=$rec['familyname'];
-	// $_SESSION['firstname']=$rec['firstname'];
-	// $_SESSION['email']=$rec['email'];
-	// $_SESSION['admin_flag']=$rec['admin_flag'];
-	// $_SESSION['holiday_with_pay']=$rec['holiday_with_pay'];
-	header('Location:switch.php');
-	exit();
+	if($pass=="abc12345678"){
+		header('Location:pass_change.php');
+		exit();
+	}else{
+		//クッキーに保存し、2回目以降は自動ログインする（現状は２週間）
+		setcookie("st_num", $staff_number);
+		setcookie("pass", $pass);
+		header('Location:switch.php');
+		exit();
+	}
 }
 else
 {
-	$_SESSION['errMsg2'] = 'パスワードを正しく入力してください。<br/>';
-	$_SESSION['staff_number']=$staff_number;
+	$err['pass'] = 'パスワードが違います。ご確認ください。<br/>';
+	$_SESSION["err"] = $err;
+	$_SESSION["st_num"] = $staff_number;
+	$_SESSION["password"] = $pass;
 	header('Location:staff_login.php');
 	exit();
 }
 }
 catch(Exception $e)
 {
-	print 'システムエラーが発生しました。';
-	exit();
+	header('Location: err_report.php');
+  exit();
 }
-
+}
 ?>
-
-
-

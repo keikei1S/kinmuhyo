@@ -1,133 +1,130 @@
 <?php
+error_reporting(0);
 session_start();
 require_once "Mail.php";
+require_once "kinmu_common.php";
 $staff_number=$_POST['staff_number'];
 $email = $_POST['email'];
 $staff_number=htmlspecialchars($staff_number,ENT_QUOTES,'UTF-8');
 $email=htmlspecialchars($email,ENT_QUOTES,'UTF-8');
 $reg_str = "/^([a-zA-Z0-9])+([a-zA-Z0-9\._-])*@([a-zA-Z0-9_-])+([a-zA-Z0-9\._-]+)+$/";
+$err = [];
+//空欄チェック
+if(empty($staff_number)){
+  $err['staff'] ='入力必須項目です。';
+}
+//桁数チェック（4桁以外エラー）
+elseif(preg_match('/^([0-9]{4})$/', $staff_number) == false ){
+  $err['staff'] ='4桁で入力してください。';
+}
+//半角数字チェック
+elseif(!preg_match("/^[0-9]+$/", $staff_number)){
+  $err['staff'] ='半角数字で入力してください。';
+}
 
-if($staff_number==""){
-  $_SESSION['errMsg1'] = '入力必須項目です。<br/>';
-  header('Location:re_pass.php');
-  //exit();
-}
-elseif (preg_match("/[^0-9]/", $staff_number)) {
-  $_SESSION['errMsg1'] = "半角数字で入力してください。";
-    header('Location:re_pass.php');
-  exit();
-}
-else
-{
-  $staff_numberlength=mb_strlen($staff_number) ;
-  if (4 < $staff_numberlength || $staff_numberlength < 4)  {
-      $_SESSION['errMsg1'] =  "4桁で入力してください。";
-       header('Location:re_pass.php');
-  exit();
-  }
-}
+
 if($email=="")
 {
-  $_SESSION['errMsg'] ='入力必須項目です。';
-  header('Location:re_pass.php');
-  exit();
+  $err['email'] ='入力必須項目です。';
 }
-if( 30 < mb_strlen($email))
+elseif( 30 < mb_strlen($email))
 {
-  $_SESSION['errMsg'] ='30桁以内で入力してください。';
-  header('Location:re_pass.php');
-  exit();
-} 
+  $err['email'] ='30桁以内で入力してください。';
+}
 elseif(!preg_match($reg_str, $email))
 {
-  $_SESSION['errMsg'] ='使用できない文字が含まれています。';
+  $err['email'] ='使用できない文字が含まれています。';
+}
+//エラーがあればパスワード再登録画面に遷移させる
+if(!empty($err)) {
+  $_SESSION["err"] = $err;
+  $_SESSION['staff_number'] =$staff_number;
+  $_SESSION['email'] =$email;
   header('Location:re_pass.php');
   exit();
-}
-
-try{
-  $urltoken = hash('sha256',uniqid(rand(),1));
-  $url = "http://localhost:8080/kinmuhyo/pass_change.php"."?urltoken=".$urltoken;
-    //例外処理を投げる（スロー）ようにする
-  $dsn='mysql:dbname=kinmuhyo;host=localhost;charset=utf8';
-  $user='root';
-  $password='';
-  $dbh= new PDO($dsn,$user,$password);
-  $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    
-  $sql='update TBL_STAFF set urltoken = ? where staff_number = ?';
-  $stmt = $dbh->prepare($sql);
-  $result = $stmt->execute(array($urltoken, $staff_number));
-}
-catch(Exception $e)
-{
-  print 'システムエラーが発生しました。';
-  exit();
-}
-
-try{
-$dsn='mysql:dbname=kinmuhyo;host=localhost;charset=utf8';
-$user='root';
-$password='';
-$dbh= new PDO($dsn,$user,$password);
-$dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    
-$sql="SELECT * FROM TBL_STAFF WHERE staff_number=?";
-$stmt=$dbh->prepare($sql);
-$data[]=$staff_number;
-$stmt->execute($data);
-$rec = $stmt -> fetch(PDO::FETCH_ASSOC);
-
-if($rec==false)
-{ 
-  $_SESSION['errMsg1'] = '入力された社員番号は存在しません。<br/>';
-  header('Location:re_pass.php');
-  exit();
-}
-
-if($rec['email']!=$email)
-{
-  $_SESSION['errMsg1'] = '登録されているメールアドレスを入力してください。<br/>';
-  header('Location:re_pass.php');
-  exit();
-}
-else
-{
-  // mb_language("Japanese");
-  // mb_internal_encoding("UTF-8");
-  $from = '6656keiichi@gmail.com';
-  $host = "ssl://smtp.gmail.com";
-  $port = "465";
-  $username = '6656keiichi@gmail.com';
-  $password = 'Keiichi1106';
-
-  $subject = 'パスワード変更';
-  $body ='以下からパスワードを再設定してください。'
-  .$url;
-
-
-  $headers = array ('From' => $from, 'To' => $email,'Subject' => $subject);
-  $smtp = Mail::factory('smtp',
-  array ('host' => $host,
-  'port' => $port,
-  'auth' => true,
-  'username' => $username,
-  'password' => $password));
-
-  $mail = $smtp->send($email, $headers, $body);
-  if (PEAR::isError($mail)) {
-    echo($mail->getMessage());
-  } else {
-    print ("メッセージを送信しました。\n");
-    print "<a href="."staff_login.php".">ログイン画面へ</a>";
+}else{
+  $rec= kinmu_common::staff_table($staff_number);
+  if($rec==false)
+  {
+    $err['staff'] = '入力された社員番号は存在しません。<br/>';
   }
- 
+  if($rec['email']!=$email)
+  {
+    $err_flag++;
+    if(!isset($err['staff'])){
+      $err['email'] = 'メールアドレスが違います。ご確認ください。<br/>';
+    }
+  }
 }
-}
-catch(Exception $e)
-{
-  print 'システムエラーが発生しました。';
+if(!empty($err)){
+  $_SESSION["err"] = $err;
+  $_SESSION['staff_number'] =$staff_number;
+  $_SESSION['email'] =$email;
+  header('Location:re_pass.php');
   exit();
+}else{
+  $encString = openssl_encrypt($staff_number, 'AES-256-CBC', '社員番号');
+  if(strpos($encString,'+') !== false){
+    $encString = openssl_encrypt($staff_number, 'AES-128-CBC', '社員番号');
+
+    //URLの時間を制限する。
+    date_default_timezone_set('Asia/Tokyo');
+    $domain = "pros-service.co.jp"; //ドメイン名
+    $key = "YOURSECRETKEY"; //SecretKey
+    $path = "/kinmu/pass_change.php"; //配信ファイルのフルパス
+    $token_lifetime = 3600;  //有効期限を指定する。（秒単位）
+
+    $expiration = time() + $token_lifetime;
+    $string_to_sign = $path . $expiration;
+    $signature = hash_hmac("sha256", $string_to_sign, $key);
+    $token = $expiration . "_" . $signature;
+    $URL= "http://" . $domain . $path . "?p=$encString" ."&t=" . $token;
+    $limit=date('Y-m-d H:i:s',$expiration)."まで有効";
+
+    // mb_language("Japanese");
+    // mb_internal_encoding("UTF-8");
+    $from = 'prossystem.test@gmail.com';
+    $host = "ssl://smtp.gmail.com";
+    $port = "465";
+    $username = "prossystem.test@gmail.com";
+    $password = 'prostest';
+
+    $subject = 'ログインパスワード再設定の確認';
+    $body = $rec["familyname"].$rec["firstname"]."さん
+
+    お疲れ様です。
+
+    勤務表ログインパスワード再設定方法についてお知らせいたします。
+
+    ──────────────────────────────
+    ◆ パスワードの再設定について
+    ──────────────────────────────
+
+    下記のアドレスにアクセスしますと、パスワードの再設定をおこなえます。
+
+    $URL
+
+    ※$limit
+    パスワード再発行の手続きにお心当たりの無い場合は
+    このメールを破棄していただきますようお願い申し上げます。
+
+    ※本メールは送信専用のため、ご返信いただけません。";
+
+    $headers = array ('From' => $from, 'To' => $email,'Subject' => $subject);
+    $smtp = Mail::factory('smtp',
+    array ('host' => $host,
+    'port' => $port,
+    'auth' => true,
+    'username' => $username,
+    'password' => $password));
+
+    $mail = $smtp->send($email, $headers, $body);
+    if (PEAR::isError($mail)) {
+      echo($mail->getMessage());
+    } else {
+      header('Location:pass_change_done.php');
+      exit;
+    }
+  }
 }
 ?>
-
