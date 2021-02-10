@@ -10,8 +10,11 @@ if(!isset($_SESSION)){
 ob_start();
 require_once('kinmu_common.php');
 ob_clean();
-if($_SERVER['HTTP_REFERER']!="http://localhost:8080/kinmuhyo/list_of_members.php"){
-	$_SERVER['HTTP_REFERER']="http://localhost:8080/kinmuhyo/list_of_members.php";
+// if($_SERVER['HTTP_REFERER']!="http://localhost:8080/kinmuhyo/list_of_members.php"){
+// 	$_SERVER['HTTP_REFERER']="http://localhost:8080/kinmuhyo/list_of_members.php";
+// }
+if($_SERVER['HTTP_REFERER']!="https://www.pros-service.co.jp/kinmu/list_of_members.php"){
+	$_SERVER['HTTP_REFERER']="https://www.pros-service.co.jp/kinmu/list_of_members.php";
 }
 $url = $_SERVER['HTTP_REFERER']."?page_id=".$_SESSION["id"]."&".urlencode(urlencode("ステータス1"))."=".$_SESSION["status"][0]."&".urlencode(urlencode("ステータス2"))."=".$_SESSION["status"][1]."&".urlencode(urlencode("ステータス3"))."=".$_SESSION["status"][2]."&".urlencode(urlencode("ステータス4"))."=".$_SESSION["status"][3]."&".urlencode(urlencode("ステータス5"))."=".$_SESSION["status"][4];
 if(isset($_POST["end_print"])){
@@ -62,7 +65,7 @@ if(isset($_POST["start_print"])){
 		}
 		catch(Exception $e){
 			header('Location: err_report.php');
- 			exit();
+		exit();
 		}
 	$_SESSION["print_err"] = "社員番号".$_SESSION['staffcode']."の勤務表を印刷しました。";
 	header("Location:$url");

@@ -40,13 +40,12 @@ function httpGet($url)
  */
 function loadHolidays() {
   // 祝祭日データ URL
-  //正規URL
+
   $url = 'https://www8.cao.go.jp/chosei/shukujitsu/syukujitsu.csv';
   // HTTP GET で取得
   $data = httpGet($url);
   if (!$data) {
-    header('Location: err_report.php');
-    exit();
+      throw new Exception("祝日データ取得に失敗しました。");
   }
   // CSV が SJIS なので文字コードを変換しておく
   $data = mb_convert_encoding($data, 'UTF-8', 'SJIS');

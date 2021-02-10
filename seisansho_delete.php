@@ -17,9 +17,6 @@ $staff_number=$result['staff_number'];
 $sentaku = $_SESSION['sentaku'];
 $count = count($sentaku);
 
-// // エラー表示を停止
-// error_reporting(8192);
-
 $month = $_SESSION["select1"];
 if(isset($month)){
     $s_year_and_month = $month.date("-01");
@@ -28,13 +25,11 @@ if(isset($month)){
 }
 try
 {
-$dsn='mysql:dbname=pros-service_kinmu;host=mysql731.db.sakura.ne.jp;charset=utf8';
-$user='pros-service';
-$password='cl6cNJs2lt5W';
-$dbh = new PDO($dsn, $user, $password);
-
+$dbh = db_connect();
 $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
+//ローカル用
+// $sql="SELECT * FROM tbl_checkout WHERE staff_number=:staff_number AND year_and_month BETWEEN :s_year_and_month AND :e_year_and_month";
+//サーバー用
 $sql="SELECT * FROM TBL_CHECKOUT WHERE staff_number=:staff_number AND year_and_month BETWEEN :s_year_and_month AND :e_year_and_month";
 $stmt=$dbh->prepare($sql);
 $stmt->bindValue(":staff_number",$staff_number,PDO::PARAM_STR);
@@ -50,10 +45,7 @@ $rec = $stmt -> fetchall(PDO::FETCH_ASSOC);
     }
 try
 {     
-$dsn='mysql:dbname=pros-service_kinmu;host=mysql731.db.sakura.ne.jp;charset=utf8';
-$user='pros-service';
-$password='cl6cNJs2lt5W';
-$dbh = new PDO($dsn, $user, $password);
+$dbh = db_connect();
 $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 for ($i = 0; $i < $count ; $i++) {  
 //サーバー用

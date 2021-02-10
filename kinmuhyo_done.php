@@ -20,17 +20,17 @@ print '<span style="font-weight:bold;">'.'No.'.$staff_number.$staff_name.'</span
 </div>
 <br/>
 <div class="wrapper">
-	<?if(in_array('NG', $check_result)){?>
+	<?php if(in_array('NG', $check_result)){?>
 	<h2>入力内容に誤りがあります。</br>入力内容を修正し、再度保存してください。</h2>
-	<?}else{?>
+	<?php }else{?>
 		<h1>勤務表を保存しました。</h1>
-		<?}?>
+		<?php }?>
 	<!--勤務表画面に戻る!-->
 	<div class="btn_class">
 		<button class="back_btn" type=“button” onclick="location.href='kinmuhyo.php'">戻る</button>
 	</div>
 	<!--管理者へメール送信!-->
-	<?if(!in_array('NG', $check_result)){?>
+	<?php if(!in_array('NG', $check_result)){?>
 		<div class="btn_class">
 			<form method="post" action="input_completed.php">
 				<button class="done" type="submit">管理者へ提出</button>
@@ -41,6 +41,6 @@ print '<span style="font-weight:bold;">'.'No.'.$staff_number.$staff_name.'</span
 	<form method="post" action="rogaut.php">
 		<button class="rogaut" type="submit">ログアウト</button>
 	</form>
-	<?}?>
+	<?php }?>
 </body>
 </html>

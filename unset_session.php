@@ -13,7 +13,12 @@ $login = $_SESSION["login"];
 $result = $_SESSION["result"];
 $status = $_SESSION["status"];
 $url = $_SESSION["url"];
-$new = $_SESSION["newRegister"];
+if(isset($_SESSION["newRegister"])){
+	$new = $_SESSION["newRegister"];
+}
+if(isset($_SESSION["staffcode"])){
+  $staffcode = $_SESSION["staffcode"];
+}
 
 //セッション情報の初期化
 $_SESSION = array();
@@ -22,6 +27,7 @@ $_SESSION = array();
 $_SESSION["login"] = $login;
 $_SESSION["result"] = $result;
 $_SESSION["status"] = $status;
+$_SESSION["staffcode"] = $staffcode;
 
 if(isset($_POST["continue"])){
   $_SESSION["newRegister"]=$new;
@@ -29,7 +35,7 @@ if(isset($_POST["continue"])){
   header('Location: index.php');
   exit;
 }else{
-  header('Location: list_of_members.php');
+  header('Location:' .$url);
   exit;
 }
 ?>

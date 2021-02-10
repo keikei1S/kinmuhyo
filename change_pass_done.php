@@ -1,5 +1,5 @@
 <script language="JavaScript">
-//URLが下手が記された場合に画面をログイン画面に返す
+//URLが手打ちされた場合に画面をログイン画面に返す
 var refinfo=document.referrer;
 if (!refinfo){
 　window.location.href = 'https://www.pros-service.co.jp/kinmu/staff_login.php';
@@ -20,9 +20,8 @@ if (!refinfo){
 <h2>パスワードの変更が完了しました。</h2><br/>
 <br/>
 <form method="post" action="switch.php">
-<?setcookie("st_num", "", time() - 30);
-setcookie("pass", "", time() - 30)?>
 <input type="submit" value="メニュー一覧へ" class="back_btn">
+<input type="hidden" name="login" value="1">
 </form>
 </div>
 </body>

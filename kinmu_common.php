@@ -94,14 +94,14 @@ function work_time($t){
 
 
 //DB接続の関数(ローカル)
-define('DB_USERNAME', 'root');
-define('DB_PASSWORD', '');
-define('DSN', 'mysql:dbname=kinmuhyo;host=localhost;charset=utf8');
+// define('DB_USERNAME', 'root');
+// define('DB_PASSWORD', '');
+// define('DSN', 'mysql:dbname=kinmu;host=localhost;charset=utf8');
 
 //DB接続の関数(サーバー)
-// define('DB_USERNAME', 'pros-service');
-// define('DB_PASSWORD', 'cl6cNJs2lt5W');
-// define('DSN', 'mysql:dbname=pros-service_kinmu;host=mysql731.db.sakura.ne.jp;charset=utf8');
+define('DB_USERNAME', 'pros-service');
+define('DB_PASSWORD', 'p9bkubn8pg');
+define('DSN', 'mysql:dbname=pros-service_kinmu;host=mysql731.db.sakura.ne.jp;charset=utf8');
 
 function db_connect(){
     $dbh = new PDO(DSN, DB_USERNAME, DB_PASSWORD);
@@ -118,7 +118,7 @@ class kinmu_common{
 	try{
 		$dbh = db_connect();
 		$dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-		$sql="SELECT `staff_number`, `familyname`, `firstname`, `email`, `holiday_with_pay`, `new_work_id`, `new_start_month`, `new_end_month`, `old_work_id`, `old_start_month`, `old_end_month` FROM `TBL_STAFF` WHERE staff_number=:staff_number";
+		$sql="SELECT `staff_number`, `familyname`, `firstname`, `email`,`admin_flag`, `holiday_with_pay`, `new_work_id`, `new_start_month`, `old_work_id`, `old_start_month`, `old_end_month` FROM `TBL_STAFF` WHERE staff_number=:staff_number";
 		$stmt=$dbh->prepare($sql);
 		$stmt->bindValue(":staff_number",$staff_number,PDO::PARAM_STR);
 		$stmt->execute();
@@ -162,7 +162,7 @@ class kinmu_common{
 		}catch(Exception $e){
 			return $rec;
 			header('Location: err_report.php');
-			exit();
+		exit();
 		}
 		if($rec==false){
 			$select_month = date('Y-m-d', strtotime('first day of previous month'));
@@ -183,7 +183,7 @@ class kinmu_common{
 			}catch(Exception $e){
 				return $rec;
 				header('Location: err_report.php');
-				exit();
+		exit();
 			}
 		}
 		$dbh=null;
@@ -206,7 +206,7 @@ class kinmu_common{
 {
 	return $rec;
 	header('Location: err_report.php');
-	exit();
+		exit();
 
 		}
 }
@@ -253,7 +253,7 @@ class kinmu_common{
 {
 	return $rec;
 	header('Location: err_report.php');
-	exit();
+		exit();
 
 		}
 	}
@@ -276,7 +276,7 @@ class kinmu_common{
 {
 	return $rec;
 	header('Location: err_report.php');
-	exit();
+		exit();
 
 		}
 	}
@@ -315,8 +315,7 @@ class kinmu_common{
 {
 	return $rec;
 	header('Location: err_report.php');
-	exit();
-
+		exit();
 		}
 	}
 	//勤務表テーブルに格納されている残業時間の合計を取得する
@@ -354,7 +353,7 @@ class kinmu_common{
 {
 	return $rec;
 	header('Location: err_report.php');
-	exit();
+		exit();
 
 		}
 	}
@@ -393,7 +392,7 @@ class kinmu_common{
 {
 	return $rec;
 	header('Location: err_report.php');
-	exit();
+		exit();
 
 		}
 	}
@@ -432,7 +431,7 @@ class kinmu_common{
 {
 	return $rec;
 	header('Location: err_report.php');
-	exit();
+		exit();
 
 		}
 	}

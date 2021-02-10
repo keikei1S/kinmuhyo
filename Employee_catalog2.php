@@ -23,6 +23,7 @@ require_once("kinmu_common.php");
 <body>
 	<?php
 	if(isset($_SESSION["post"])){
+		$modify = $_SESSION["result"]["staff_number"];
 		$staff = $_SESSION["post"]['staff_number'];
 		$username = $_SESSION["post"]['familyname'];
 		$username3=$_SESSION["post"]['familyname_kana'];
@@ -58,11 +59,11 @@ require_once("kinmu_common.php");
 		$passwords = password_hash($passwords, PASSWORD_DEFAULT);
 		$_SESSION["newRegister"] = $_SESSION["post"]["add"];
 	}else{
-		header('Location: err_report.php');
-		exit();
+		// header('Location: err_report.php');
+		// exit();
 	}
 	unset($_SESSION["post"]);
-
+	$modify=htmlspecialchars($modify,ENT_QUOTES,'UTF-8');
 	$staff=htmlspecialchars($staff,ENT_QUOTES,'UTF-8');
 	$username=htmlspecialchars($username,ENT_QUOTES,'UTF-8');
 	$username2=htmlspecialchars($username2,ENT_QUOTES,'UTF-8');
@@ -84,7 +85,7 @@ require_once("kinmu_common.php");
 		$dbh = db_connect();
 		$dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 		if($old_work_id!=""){
-			$sql='INSERT INTO TBL_STAFF(staff_number,familyname,familyname_kana,firstname,firstname_kana,email,hire_date,retirement_date,admin_flag,holiday_with_pay,new_work_id,new_start_month,new_end_month,old_work_id,old_start_month,old_end_month,password )VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)';
+			$sql='INSERT INTO TBL_STAFF(staff_number,familyname,familyname_kana,firstname,firstname_kana,email,hire_date,retirement_date,admin_flag,holiday_with_pay,new_work_id,new_start_month,new_end_month,old_work_id,old_start_month,old_end_month,last_modified,password )VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)';
 			$stmt = $dbh->prepare($sql);
 			$data[] = $staff;
 			$data[] = $username;
@@ -102,9 +103,10 @@ require_once("kinmu_common.php");
 			$data[] = $old_work_id;
 			$data[] = $old_start_month;
 			$data[] = $old_end_month;
+			$data[] = $modify;
 			$data[] = $passwords;
 		}else{
-			$sql='INSERT INTO TBL_STAFF(staff_number,familyname,familyname_kana,firstname,firstname_kana,email,hire_date,retirement_date,admin_flag,holiday_with_pay,new_work_id,new_start_month,new_end_month,password )VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)';
+			$sql='INSERT INTO TBL_STAFF(staff_number,familyname,familyname_kana,firstname,firstname_kana,email,hire_date,retirement_date,admin_flag,holiday_with_pay,new_work_id,new_start_month,new_end_month,last_modified,password)VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)';
 			$stmt = $dbh->prepare($sql);
 			$data[] = $staff;
 			$data[] = $username;
@@ -119,6 +121,7 @@ require_once("kinmu_common.php");
 			$data[] = $new_work_id;
 			$data[] = $new_start_month;
 			$data[] = $new_end_month;
+			$data[] = $modify;
 			$data[] = $passwords;
 		}
 		$stmt->execute($data);
@@ -138,7 +141,8 @@ require_once("kinmu_common.php");
 		$dbh = null;
 	} catch (Exception $e)
 	{
-		header('Location: err_report.php');
+		var_dump($e);
+		// header('Location: err_report.php');
 		exit();
 	}
 	?>

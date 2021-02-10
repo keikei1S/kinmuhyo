@@ -19,16 +19,12 @@ if(isset($month)){
         $now_month = date('t', strtotime($s_year_and_month));
         $e_year_and_month = $month.date("-".$now_month);
     }
-    //ローカル用
-
-    // $dbh = db_connect();
-    $dsn='mysql:dbname=pros-service_kinmu;host=mysql731.db.sakura.ne.jp;charset=utf8';
-    $user='pros-service';
-    $password='cl6cNJs2lt5W';
-    $dbh = new PDO($dsn, $user, $password);
-
+    
+    $dbh = db_connect();
     $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
+    //ローカル用
+    // $sql="SELECT * FROM tbl_checkout WHERE staff_number=:staff_number AND year_and_month BETWEEN :s_year_and_month AND :e_year_and_month";
+    //サーバー用
     $sql="SELECT * FROM TBL_CHECKOUT WHERE staff_number=:staff_number AND year_and_month BETWEEN :s_year_and_month AND :e_year_and_month";
     $stmt=$dbh->prepare($sql);
     $stmt->bindValue(":staff_number",$staff_number,PDO::PARAM_STR);
@@ -37,7 +33,6 @@ if(isset($month)){
     $stmt->execute();
     $rec = $stmt -> fetchAll(PDO::FETCH_ASSOC);
 //日付
-var_dump(count($_SESSION['houmon']));
 $X = count($_SESSION['houmon']);
 for ($i = 0; $i <= $X ; $i++) {
     if(!empty($_SESSION['date'][$i])){
@@ -50,11 +45,7 @@ for ($i = 0; $i <= $X ; $i++) {
         $No[$i] = $_SESSION['no'][$i];
 try
 {  
-    $dsn='mysql:dbname=pros-service_kinmu;host=mysql731.db.sakura.ne.jp;charset=utf8';
-    $user='pros-service';
-    $password='cl6cNJs2lt5W';
-    $dbh = new PDO($dsn, $user, $password);
-
+    $dbh = db_connect();
     $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 if($rec[$i] == ""){
     print 'if';

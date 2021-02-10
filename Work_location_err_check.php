@@ -2,8 +2,7 @@
 //セッションスタート
 session_start();
 require('kinmu_common.php');
-//セッションを終了
-//$_SESSION = array();
+unset($_SESSION["up_err"]);
 try {
     // //////////////////データベースの読込 S//////////////////////
     $dbh = db_connect();
@@ -57,13 +56,14 @@ error_reporting(0);
 //勤務IDエラーチェック
 $belongssrec = $belongssstmt->fetchall(PDO::FETCH_ASSOC);
 
-// foreach($belongssrec as $belongssre){
-//     if(empty($_POST['tuika'])==false){
-//     if($_SESSION['kinmuchi'] == $belongssre['work_id']){
-//         $errflag = 16;
-//         }
-//     }
-// }
+foreach($belongssrec as $belongssre){
+    if(empty($_POST['tuika'])==false){
+    if($_SESSION['kinmuchi'] == $belongssre['work_id']){
+        $errflag = 1;
+        $_SESSION["id_err"] = "既に登録されている勤務IDです";
+        }
+    }
+}
 
 
 
@@ -78,7 +78,9 @@ $belongssrec = $belongssstmt->fetchall(PDO::FETCH_ASSOC);
 if(empty($_POST['kinmuchiid'])){
     $errflag = 2;
 }
-
+if(mb_strlen($_POST['kinmuchiid']) > 20){
+    $errflag = 9;
+}
 //始業時間エラーチェック
 if (empty($_POST['strat'])){
     $errflag = 3;
@@ -96,22 +98,24 @@ if (empty($_POST['end'])){
 }elseif( $_POST['end'] < $_SESSION['strat'] ){
     $errflag = 8;
 }
-
 if($errflag >= 1){
   if(isset($_POST['kousin']) && $_SESSION["kinmuchi"]==""){
     $_SESSION["up_err"]="※勤務地IDが設定されていないため、更新はできません。";
   }
   header('Location: Work_location.php');
+  exit;
 }elseif(isset($_POST['kousin'])){
   if($_SESSION["kinmuchi"]!=""){
     header('Location:Workupdate.php');
+    exit;
   }else{
-    $_SESSION["up_err"]="※勤務地IDが設定されていないため、更新はできません。";
      header('Location: Work_location.php');
+     exit;
   }
 }
 else{
     header('Location: Work_location2.php');
+    exit;
 }
 
 ?>

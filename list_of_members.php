@@ -12,22 +12,25 @@ if (isset($_SESSION["login"])==false)
 unset($_SESSION["newRegister"]);
 unset($_SESSION["hensyuu"]);
 unset($_SESSION["up_err"]);
-//if($_SERVER['HTTP_REFERER']=="https://www.pros-service.co.jp/kinmu/preview.php"){
-if($_SERVER['HTTP_REFERER']=="http://localhost:8080/kinmuhyo/preview.php"){
+unset($_SESSION["url"]);
+unset($_SESSION["id_err"]);
+unset($_SESSION["work_id"]);
+unset($_SESSION["work_name"]);
+unset($_SESSION["opening_hours"]);
+unset($_SESSION["closing_hours"]);
+unset($_SESSION["kinmuchi"]);
+unset($_SESSION["kinmuchiid"]);
+unset($_SESSION["strat"]);
+unset($_SESSION["end"]);
 
-	//unset($_SESSION["print_err"]);
-}
 require('kinmu_common.php');
-if($_SERVER["REQUEST_METHOD"] === "POST"){
-    //POSTされた場合の値
+
 		if(isset($_POST["select1"])){
 			$_SESSION["thuki"] = $_POST["select1"];
 		}
 		if(isset($_SESSION["thuki"])){
 			$_POST["select1"]=$_SESSION["thuki"];
 		}
-}else{
-    //GET/SESSIONでの場合
 		if(isset($_GET[urlencode("ステータス1")])){
 				$_POST["status"][0]= $_GET[urlencode("ステータス1")];
 		}
@@ -45,9 +48,8 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
 		}
 		if(isset($_SESSION["thuki"])){
 			$_POST["select1"]=$_SESSION["thuki"];
-			//unset($_SESSION["thuki"]);
 		}
-}
+
 if(isset($_SESSION["staffcode"])){
 	$_POST["staffcode"]=$_SESSION["staffcode"];
 }
@@ -56,13 +58,11 @@ if(isset($_SESSION["print_err"])){
 	unset($_SESSION["print_err"]);
 }
 ?>
-<!DOCTYPE html>
+<!DOCTYPE HTML PUBLIC"-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-
-<meta charset=utf-8>
 <head>
-	<meta charset="UTF-8">
-	<title></title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>社員一覧画面</title>
 	<style>
 	span.sample1 { position:absolute; top:130px; left:960px }
 	span.sample2 { position:absolute; top:105px; left:915px }
@@ -144,7 +144,7 @@ if(isset($_SESSION["print_err"])){
 		$_SESSION["year_month"] = $start_month;
 		try {
 			// //////////////////データベースの読込 S//////////////////////
-			define('max_view','10');
+			define('max_view','5');
 			//ステータスの値を取得する
 			//null,ブランクを削除する
 			if(isset($_POST["status"])){
@@ -395,7 +395,7 @@ if(isset($_SESSION["print_err"])){
 	</form>
 </div>
 <div class="page">
-<?
+<?php
 //ページネーションを表示
 for ($n = 1; $n <= $pages; $n ++){
 	if ($n == $now){
@@ -403,8 +403,8 @@ for ($n = 1; $n <= $pages; $n ++){
 		$_SESSION["id"] = $now;
 	}else{
 		?>
-		 <a href='list_of_members.php?page_id=<?=$n?>&<?=urlencode(urlencode("ステータス1"))?>=<?=$_POST["status"][0]?>&<?=urlencode(urlencode("ステータス2"))?>=<?=$_POST["status"][1]?>&<?=urlencode(urlencode("ステータス3"))?>=<?=$_POST["status"][2]?>&<?=urlencode(urlencode("ステータス4"))?>=<?=$_POST["status"][3]?>&<?=urlencode(urlencode("ステータス5"))?>=<?=$_POST["status"][4]?>'style='padding: 5px;'><?=$n?></a>
-<?}
+		 <a href='list_of_members.php?page_id=<?php print $n?>&<?php print urlencode(urlencode("ステータス1"))?>=<?php print $_POST["status"][0]?>&<?php print urlencode(urlencode("ステータス2"))?>=<?php print $_POST["status"][1]?>&<?php print urlencode(urlencode("ステータス3"))?>=<?php print $_POST["status"][2]?>&<?php print urlencode(urlencode("ステータス4"))?>=<?php print $_POST["status"][3]?>&<?php print urlencode(urlencode("ステータス5"))?>=<?php print $_POST["status"][4]?>'style='padding: 5px;'><?=$n?></a>
+<?php }
 }
 ?>
 </div>
@@ -434,13 +434,12 @@ for ($n = 1; $n <= $pages; $n ++){
 		    $checked["status"][$val]=" checked";
 		  }
 		}
-	print <<<eof
-		<input type="checkbox" name="status[]" value="0"{$checked["status"][0]}>未入力
-		<input type="checkbox" name="status[]" value="1"{$checked["status"][1]}>途中完了
-		<input type="checkbox" name="status[]" value="2"{$checked["status"][2]}>送信完了
-		<input type="checkbox" name="status[]" value="3"{$checked["status"][3]}>印刷完了
-		<input type="checkbox" name="status[]" value="4"{$checked["status"][4]}>確認完了
-	eof;?>
+		print "<input type=checkbox name=status[] value='0'{$checked["status"][0]}>未入力";
+		print "<input type=checkbox name=status[] value='1'{$checked["status"][1]}>途中完了";
+		print "<input type=checkbox name=status[] value='2'{$checked["status"][2]}>送信完了";
+		print "<input type=checkbox name=status[] value='3'{$checked["status"][3]}>印刷完了";
+		print "<input type=checkbox name=status[] value='4'{$checked["status"][4]}>確認完了";
+		?>
 	</br>
 	</br>
 		<input type="submit" name="submit" value="表示" />

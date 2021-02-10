@@ -135,20 +135,20 @@ $(".toggle-password2").click(function() {
 		margin-top: -35px;
     width:270px;
 		position: absolute;
-		left:635px
+		left:580px
 }
 label{
 	position: absolute;
-	left:500px;
+	left:450px;
 }
 input{
 	position: absolute;
-	left:630px;
+	left:580px;
 }
 .field-icon {
  color: #555;
  margin-right: 15px;
- margin-left: 390px;
+ margin-left: 335px;
  position: relative;
  z-index: 2;
 }

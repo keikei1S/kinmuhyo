@@ -11,7 +11,7 @@
 </div>
 <br/>
 <div class="wrapper">
-	<h2>メール送信が完了しました。</h2>
+	<h1 style="text-align: center; font-size: 24px;">メール送信が完了しました。</h1>
 <!--ログイン画面へ!-->
 	<form method="post" action="staff_login.php">
 		<button class="done" type="submit">ログイン画面へ</button>
