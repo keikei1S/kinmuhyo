@@ -10,8 +10,11 @@ if (isset($_SESSION["login"])==false)
 	exit();
 }
 $_SESSION["staffcode"] = $_POST["staffcode"];
-if($_SERVER['HTTP_REFERER']!="http://localhost:8080/kinmuhyo/list_of_members.php"){
-	$_SERVER['HTTP_REFERER']="http://localhost:8080/kinmuhyo/list_of_members.php";
+// if($_SERVER['HTTP_REFERER']!="http://localhost:8080/kinmuhyo/list_of_members.php"){
+// 	$_SERVER['HTTP_REFERER']="http://localhost:8080/kinmuhyo/list_of_members.php";
+// }
+if($_SERVER['HTTP_REFERER']!="https://www.pros-service.co.jp/kinmu/list_of_members.php"){
+	$_SERVER['HTTP_REFERER']="https://www.pros-service.co.jp/kinmu/list_of_members.php";
 }
 $url = $_SERVER['HTTP_REFERER']."?page_id=".$_SESSION["id"]."&".urlencode(urlencode("ステータス1"))."=".$_SESSION["status"][0]."&".urlencode(urlencode("ステータス2"))."=".$_SESSION["status"][1]."&".urlencode(urlencode("ステータス3"))."=".$_SESSION["status"][2]."&".urlencode(urlencode("ステータス4"))."=".$_SESSION["status"][3]."&".urlencode(urlencode("ステータス5"))."=".$_SESSION["status"][4];
 if($_POST['staffcode']==NULL){

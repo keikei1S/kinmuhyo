@@ -1,3 +1,10 @@
+<script language="JavaScript">
+//URLが手打ちされた場合に画面をログイン画面に返す
+var refinfo=document.referrer;
+if (!refinfo){
+　window.location.href = 'https://www.pros-service.co.jp/kinmu/staff_login.php';
+}
+</script>
 <!DOCTYPE HTML PUBLIC"-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
@@ -18,20 +25,15 @@ if (isset($_SESSION["login"])==false)
 	exit();
 }
 //ファイル読み込み	(勤務表)
-//if($_SERVER['HTTP_REFERER']!="https://www.pros-service.co.jp/kinmu/list_of_members.php"){
-if($_SERVER['HTTP_REFERER']!="http://localhost:8080/kinmuhyo/list_of_members.php"){
+if($_SERVER['HTTP_REFERER']!="https://www.pros-service.co.jp/kinmu/list_of_members.php"){
+//if($_SERVER['HTTP_REFERER']!="http://localhost:8080/kinmuhyo/list_of_members.php"){
 	ob_start();
 	include("kinmuhyo.php");
 	ob_clean();
 //先月か今月の判定
-if(isset($_POST['show'])==""){?>
+?>
 	<h3><?php print $now_month?>月分勤務表</h3>
-<?}
-elseif($_POST['show']==1){?>
- 	<h3><?php print $now_month?>月分勤務表</h3><?php }
- 		else{?>
-			<h3><?php print $now_month?>月分勤務表</h3>
-		<?}
+<?php
 print'<table border="1">';
 	print'<tr>';
 		print'<th>　氏名　';
@@ -41,12 +43,14 @@ print'<table border="1">';
 		print'</th>';
 	print'</tr>';
 print'</table>';
-
 //先月か今月を選択するプルダウン生成S//
 $select['show']=array_fill(1,2,"");
 $show=filter_input(INPUT_POST,"show");
 $select["show"][$show]="selected";
-
+if(isset($_SESSION["show"])){
+	$select["show"][$_SESSION["show"]]="selected";
+	unset($_SESSION["show"]);
+}
 print <<<eof
 <form method="post" action="kinmuhyo_summary.php">
 表示する月　
@@ -293,8 +297,8 @@ if(isset($sum3)){
 	}
 }
 ?>
-<? //if($_SERVER['HTTP_REFERER']=="https://www.pros-service.co.jp/kinmu/list_of_members.php"){
-	if($_SERVER['HTTP_REFERER']=="http://localhost:8080/kinmuhyo/list_of_members.php"){?>
+<?php if($_SERVER['HTTP_REFERER']=="https://www.pros-service.co.jp/kinmu/list_of_members.php"){
+	//if($_SERVER['HTTP_REFERER']=="http://localhost:8080/kinmuhyo/list_of_members.php"){?>
 	<table border="1" class="tbl_summary td">
 	<tr>
 		<th>　氏名　
@@ -304,63 +308,63 @@ if(isset($sum3)){
 	</tr>
 	<tr>
 		<th>勤務地</th>
-			<?if($work_id!=""){?>
-				<td><?=$work_name ?></td>
-			<?}else{?>
+			<?php if($work_id!=""){?>
+				<td><?php print $work_name ?></td>
+			<?php }else{?>
 				<td>
-					<? for ($i=0; $i < count($work_tbl); $i++) {
+					<?php for ($i=0; $i < count($work_tbl); $i++) {
 							print "<select name='work'>";
 								print "<option>".""."</option>";
 								print "<option>".$work_tbl."</option>";
 							print "</select>";
 						}?>
 				</td>
-			<?}?>
+			<?php }?>
 	</tr>
 </table>
-<?}?>
+<?php }?>
 <table border="1" align="left" class="tbl_summary">
 	<tr>
 		<th>執務日数</th>
-		<td><?if(!empty($eigyoubi)){
+		<td><?php if(!empty($eigyoubi)){
 		print $eigyoubi;
 		}else{?>
-			0<?}?>日</td>
+			0<?php }?>日</td>
 		<th>出勤日数</th>
-		<td><?if(!empty($syukkin_nissuu)){
+		<td><?php if(!empty($syukkin_nissuu)){
 		print $syukkin_nissuu;
 		}
 		else{?>
-			0<?}?>日</td>
+			0<?php }?>日</td>
 		<th>欠勤日数</th>
-		<td><?if(!empty($kekkin)){
+		<td><?php if(!empty($kekkin)){
 		print $kekkin;
 		}
 		else{?>
-			0<?}?>日</td>
+			0<?php }?>日</td>
 		<th>振休日数</th>
-		<td><?if(!empty($transfer_holiday)){
+		<td><?php if(!empty($transfer_holiday)){
 			print $transfer_holiday;
 			}else{?>
 			0
-			<?}?>日</td>
+			<?php }?>日</td>
 	</tr>
 	<tr>
 		<th>遅刻回数</th>
-		<td><?if(!empty($tikoku)){
+		<td><?php if(!empty($tikoku)){
 			print $tikoku;
 		}else{?>
 			0
-		<?}?>回</td>
+		<?php }?>回</td>
 		<th>早退回数</th>
-		<td><?if(!empty($soutai)){
+		<td><?php if(!empty($soutai)){
 			print $soutai;
 		}else{?>
 			0
-		<?}?>回</td>
+		<?php }?>回</td>
 		<th>普通残業</th>
 		<td>
-			<?if($sum_overtime["total_time"]!=""){
+			<?php if($sum_overtime["total_time"]!=""){
 				if($sum_overtime["total_time"]!="00:00"){
 				print explode(":", $sum_overtime["total_time"])[0].":".explode(":", $sum_overtime["total_time"])[1];
 				}else{
@@ -372,7 +376,7 @@ if(isset($sum3)){
 		</td>
 		<th>深夜残業</th>
 		<td>
-			<?if($sum_overtime_night["total_time"]!=""){
+			<?php if($sum_overtime_night["total_time"]!=""){
 				if($sum_overtime_night["total_time"]!="00:00"){
 				print explode(":", $sum_overtime_night["total_time"])[0].":".explode(":", $sum_overtime_night["total_time"])[1];
 				}else{
@@ -385,26 +389,26 @@ if(isset($sum3)){
 	</tr>
 	<tr>
 		<th>有給日数</th>
-		<td><?if(!empty($yuukyu_syoka)){
+		<td><?php if(!empty($yuukyu_syoka)){
 			print $yuukyu_syoka;
 		}else{?>
 			0
-			<?}?>日</td>
+			<?php }?>日</td>
 		<th>前半休</th>
-		<td><?if(!empty($zenhan)){
+		<td><?php if(!empty($zenhan)){
 			print $zenhan;
 		}else{?>
 			0
-		<?}?>日</td>
+		<?php }?>日</td>
 		<th>後半休</th>
-		<td><?if(!empty($kouhan)){
+		<td><?php if(!empty($kouhan)){
 			print $kouhan;
 		}else{?>
 			0
-		<?}?>日</td>
+		<?php }?>日</td>
 		<th>総作業時間</th>
 		<td>
-			<?if($sum_total["total_time"]!=""){
+			<?php if($sum_total["total_time"]!=""){
 					print explode(":", $sum_total["total_time"])[0].":".explode(":", $sum_total["total_time"])[1];
 				}else{
 					print "00:00";
@@ -413,7 +417,7 @@ if(isset($sum3)){
 	</tr>
 	<tr>
 		<th>有給残日数</th>
-		<td><?if($kinmuhyo_summary['status']==4){
+		<td><?php if($kinmuhyo_summary['status']==4){
 			print $kinmuhyo_summary['remaining_paid_days'];
 		}elseif(isset($yukyuzan)){
 				print $yukyuzan;
@@ -423,37 +427,42 @@ if(isset($sum3)){
 				print $yukyu;
 			}?>日</td>
 		<th>特休日数</th>
-		<td><?if(!empty($special_holiday)){
+		<td><?php if(!empty($special_holiday)){
 			print $special_holiday;
 		}else{?>
 			0
-		<?}?>日</td>
+		<?php }?>日</td>
 		<th></th>
 		<td></td>
 		<th>不足時間</th>
-		<td><?=$fusoku?></td>
+		<td><?php print $fusoku?></td>
 	</tr>
 </table>
-<?//if($_SERVER['HTTP_REFERER']!="https://www.pros-service.co.jp/kinmu/list_of_members.php"){
-	if($_SERVER['HTTP_REFERER']!="http://localhost:8080/kinmuhyo/list_of_members.php"){?>
+<?php if($_SERVER['HTTP_REFERER']!="https://www.pros-service.co.jp/kinmu/list_of_members.php"){
+	//if($_SERVER['HTTP_REFERER']!="http://localhost:8080/kinmuhyo/list_of_members.php"){?>
+	</br>
+	</br>
+	</br>
+	</br>
+	</br>
 	<p>
 	<a href="kinmuhyo.php">明細を入力する</a>
-<?}else{?>
+<?php }else{?>
 	<div class="box">担当印
-	<?if($kinmuhyo_summary['status']!="0" || $kinmuhyo_summary['status']!="1"){?>
+	<?php if($kinmuhyo_summary['status']!="0" || $kinmuhyo_summary['status']!="1"){?>
 		<div class="stamp stamp-approve">
-			<span><? print $kinmuhyo_summary['send_date']?></span>
-			<span><? print $staff_name?></span>
+			<span><?php print $kinmuhyo_summary['send_date']?></span>
+			<span><?php print $staff_name?></span>
 		</div>
-	<?}?>
+	<?php }?>
 	</div>
 	<div class="box">責任者確認印
 		<div class="stamp stamp-approve">
-			<span><? print $kinmuhyo_summary['send_date']?></span>
+			<span><?php print $kinmuhyo_summary['send_date']?></span>
 			<span>軽部</span>
 		</div>
 	</div>
-<?}?>
+<?php }?>
 </body>
 </html>
 <style type="text/css">

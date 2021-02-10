@@ -1,5 +1,5 @@
 <?php
-error_reporting(0);
+//error_reporting(0);
 session_start();
 require_once "Mail.php";
 require_once "kinmu_common.php";
@@ -13,13 +13,13 @@ $err = [];
 if(empty($staff_number)){
   $err['staff'] ='入力必須項目です。';
 }
-//桁数チェック（4桁以外エラー）
-elseif(preg_match('/^([0-9]{4})$/', $staff_number) == false ){
-  $err['staff'] ='4桁で入力してください。';
-}
 //半角数字チェック
 elseif(!preg_match("/^[0-9]+$/", $staff_number)){
   $err['staff'] ='半角数字で入力してください。';
+}
+//桁数チェック（4桁以外エラー）
+elseif(preg_match('/^([0-9]{4})$/', $staff_number) == false ){
+  $err['staff'] ='4桁で入力してください。';
 }
 
 
@@ -50,7 +50,6 @@ if(!empty($err)) {
   }
   if($rec['email']!=$email)
   {
-    $err_flag++;
     if(!isset($err['staff'])){
       $err['email'] = 'メールアドレスが違います。ご確認ください。<br/>';
     }
@@ -64,15 +63,18 @@ if(!empty($err)){
   exit();
 }else{
   $encString = openssl_encrypt($staff_number, 'AES-256-CBC', '社員番号');
-  if(strpos($encString,'+') !== false){
-    $encString = openssl_encrypt($staff_number, 'AES-128-CBC', '社員番号');
+if(strpos($encString,'+') !== false){
+  $encString = openssl_encrypt($staff_number, 'AES-128-CBC', '社員番号');
+}
 
-    //URLの時間を制限する。
-    date_default_timezone_set('Asia/Tokyo');
-    $domain = "pros-service.co.jp"; //ドメイン名
-    $key = "YOURSECRETKEY"; //SecretKey
-    $path = "/kinmu/pass_change.php"; //配信ファイルのフルパス
-    $token_lifetime = 3600;  //有効期限を指定する。（秒単位）
+//URLの時間を制限する。
+date_default_timezone_set('Asia/Tokyo');
+$domain = "pros-service.co.jp"; //ドメイン名
+//$domain = "localhost:8080/";
+$key = "YOURSECRETKEY"; //SecretKey
+$path = "/kinmu/pass_change.php"; //配信ファイルのフルパス
+//$path = "/kinmuhyo/pass_change.php";
+$token_lifetime = 3600;  //有効期限を指定する。（秒単位）
 
     $expiration = time() + $token_lifetime;
     $string_to_sign = $path . $expiration;
@@ -126,5 +128,4 @@ if(!empty($err)){
       exit;
     }
   }
-}
 ?>

@@ -15,13 +15,19 @@ if (isset($_SESSION["login"])==false)
 //DB接続クラスを読む
 require_once("kinmu_common.php");
 //社員一覧画面に返す処理（URLを調整する）
-if($_SERVER['HTTP_REFERER']!="http://localhost:8080/kinmuhyo/list_of_members.php"){
-	$_SERVER['HTTP_REFERER']="http://localhost:8080/kinmuhyo/list_of_members.php";
-}
-// if($_SERVER['HTTP_REFERER']!="https://www.pros-service.co.jp/kinmu/list_of_members.php"){
-// 	$_SERVER['HTTP_REFERER']="https://www.pros-service.co.jp/kinmu/list_of_members.php";
+// if($_SERVER['HTTP_REFERER']!="http://localhost/kinmuhyo/list_of_members.php"){
+// 	$_SERVER['HTTP_REFERER']="http://localhost/kinmuhyo/list_of_members.php";
 // }
-$url = $_SERVER['HTTP_REFERER']."?page_id=".$_SESSION["id"]."&".urlencode(urlencode("ステータス1"))."=".$_SESSION["status"][0]."&".urlencode(urlencode("ステータス2"))."=".$_SESSION["status"][1]."&".urlencode(urlencode("ステータス3"))."=".$_SESSION["status"][2]."&".urlencode(urlencode("ステータス4"))."=".$_SESSION["status"][3]."&".urlencode(urlencode("ステータス5"))."=".$_SESSION["status"][4];
+if($_SERVER['HTTP_REFERER']!="https://www.pros-service.co.jp/kinmu/list_of_members.php"){
+	$_SERVER['HTTP_REFERER']="https://www.pros-service.co.jp/kinmu/list_of_members.php";
+}
+if(!isset($_SESSION["url"])){
+	if($_SESSION["id"]==""){
+		$_SESSION["id"]="1";
+	}
+	$url = $_SERVER['HTTP_REFERER']."?page_id=".$_SESSION["id"]."&".urlencode(urlencode("ステータス1"))."=".$_SESSION["status"][0]."&".urlencode(urlencode("ステータス2"))."=".$_SESSION["status"][1]."&".urlencode(urlencode("ステータス3"))."=".$_SESSION["status"][2]."&".urlencode(urlencode("ステータス4"))."=".$_SESSION["status"][3]."&".urlencode(urlencode("ステータス5"))."=".$_SESSION["status"][4];
+	$_SESSION["url"] =$url;
+}
 
 //methodがPOSTの場合代入
 if($_SERVER["REQUEST_METHOD"] === "POST"){
@@ -33,6 +39,7 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
 		}else{
 			// list_of_membersのラジオボタンの値を$_SESSION['staffcode']に代入
 				$staff_number = $_POST['staffcode'];
+				$_SESSION['staffcode'] = $_POST['staffcode'];
 		}
 		// 社員情報編集ボタン押下時$_POST['hensyuu']を$_SESSION['hensyuu']に代入
 		$_SESSION['hensyuu'] = $_POST['hensyuu'];
@@ -83,6 +90,8 @@ try {
 		$old_work_id = $staffrec["old_work_id"];
 		$old_start_month = $staffrec["old_start_month"];
 		$old_end_month = $staffrec["old_end_month"];
+		$modify = $staffrec["last_modified"];
+		$update = substr($staffrec["update_date"],0,10);
 	}elseif(isset($_POST['add']) || isset($_POST['change'])){
 		$staff_number = $_POST["staff_number"];
 		$family = $_POST["familyname"];
@@ -132,11 +141,20 @@ try {
 </head>
 
 <body>
+	<?php
+	if(isset($_POST["change"]) || isset($_POST["hensyuu"])){
+		//社員テーブルを讀みに行く
+		$modify_user= kinmu_common::staff_table($modify);
+		 print "最終更新者:".$modify_user["familyname"].$modify_user["firstname"];
+		 print "</br>";
+		 print "最終更新日:".$update;
+	}
+	?>
 
 	<div align="center">
 		<form method="post" enctype="multipart/form-data">
-			<h3>社員情報編集</h3>
-			<? print '<input type="hidden" name="url" value="'.$url.'">';?>
+			<h3 style="margin-top:-10px;">社員情報編集</h3>
+			<?php print '<input type="hidden" name="url" value="'.$url.'">';?>
 			<span class="img_pro">
 				<img src="https://www.pros-service.co.jp/img/image_2020_4_10.png"
 				alt="画像のサンプル" width="150px" height="60px">
@@ -488,7 +506,7 @@ print '<input type="text" value="' . $firstkana . '" name="firstname_kana"maxlen
 					</span>
 
 					<span class="toggle_btn1">
-						<input type="submit" value="キャンセル" formaction=<?print $url?>
+						<input type="submit" value="キャンセル" formaction=<?php print $_SESSION["url"]?>
 						style="background-color: #99CCCC; WIDTH: 85px; HEIGHT: 30px">
 					</form>
 					</span>

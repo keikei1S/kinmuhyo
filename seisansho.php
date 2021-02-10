@@ -1,5 +1,6 @@
 <?php
 if(!isset($_SESSION)){
+//セッションを開始する
 session_start();
 
 unset($_SESSION['delete']);
@@ -8,12 +9,6 @@ unset($_SESSION['delete']);
 if(empty($_SESSION['err'])){
 	$_SESSION['err']=2;
 }
-
-
-ob_start();
-include("kinmu_common.php");
-ob_clean();
-
 // エラー表示を停止
 error_reporting(8192);
 
@@ -30,8 +25,8 @@ else {
 	$_SESSION["select1"] = date("Y-m",strtotime("0 month"));
 	$month = $_SESSION["select1"];
 }
-/////////////////////////////////////////////errチェックs////////////////////////////////////////////
 
+//エラーメッセージ出力
 print '<font color="red">';
 print'<span class="errmsg1">';
 if(isset($_SESSION['errmsg1'])){
@@ -56,10 +51,8 @@ if(isset($_SESSION['errmsg7'])){
 print $_SESSION['errmsg7'];
 }
 print'</span>';
-
-
 print'</font>';
-/////////////////////////////////////////////errチェックe////////////////////////////////////////////
+
 // ログイン状態のチェック
 if (isset($_SESSION["login"])==false) 
 {
@@ -67,6 +60,15 @@ if (isset($_SESSION["login"])==false)
 	exit();
 }
 try {
+	//DB接続
+    ob_start();
+    include("kinmu_common.php");
+    ob_clean();
+
+    $dbh = db_connect();
+    $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+
 	//ログイン情報を変数に代入
 	$result = $_SESSION['result'];
 
@@ -81,12 +83,24 @@ try {
 	$firstname = $_SESSION['firstname'];
 	$No = 'No.';
 }
-if(empty($_SESSION['worklocation'])){
-	print "<strong>" .$No."</strong>";
-	print "<strong>".$staff_number."</strong>";
-	print "<strong>".$familyname."</strong>";
-	print "<strong>".$firstname."</strong>";
-}
+
+//文字の最大値
+$limit = 20;
+	print '<span style="font-weight:bold;">'.'No.'.$staff_number.'</span>';
+//姓
+	if(mb_strlen($result['familyname']) < $limit) {
+	print '<span style="font-weight:bold;">'.$result['familyname'].'</span>';
+	}else{
+	print '<span style="font-weight:bold;">'.mb_substr($result['familyname'],0,20).'</span>';
+	}
+//名
+if(mb_strlen($result['firstname']) < $limit) {
+	print '<span style="font-weight:bold;">'.$result['firstname'].'</span>';
+	}else{
+	print '<span style="font-weight:bold;">'.mb_substr($result['firstname'],0,20).'</span>';
+	}
+	print '<br/>';
+	
 	// //////////////////データベースの読込 S//////////////////////
 	if(isset($month)){
 		$s_year_and_month = $month.date("-01");
@@ -95,15 +109,11 @@ if(empty($_SESSION['worklocation'])){
 	}
 	date_default_timezone_set('Asia/Tokyo');
 	$rec = false;
-
-	$dsn='mysql:dbname=pros-service_kinmu;host=mysql731.db.sakura.ne.jp;charset=utf8';
-    $user='pros-service';
-	$password='cl6cNJs2lt5W';
-	
-	$dbh = new PDO($dsn, $user, $password);
-
-	$dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+	//ローカル用
+	// $sql="SELECT * FROM tbl_checkout WHERE staff_number=:staff_number AND year_and_month BETWEEN :s_year_and_month AND :e_year_and_month ORDER BY year_and_month ASC";
+	// サーバー用
 	$sql="SELECT * FROM TBL_CHECKOUT WHERE staff_number=:staff_number AND year_and_month BETWEEN :s_year_and_month AND :e_year_and_month ORDER BY year_and_month ASC";
+
 		$stmt=$dbh->prepare($sql);
 		$stmt->bindValue(":staff_number",$staff_number,PDO::PARAM_STR);
 		$stmt->bindValue(":s_year_and_month",$s_year_and_month,PDO::PARAM_STR);
@@ -201,10 +211,10 @@ span.errmsg1 {
 	left: 1000px
 }
 
-span.sample {
+span.img {
 	position: absolute;
-	top: -90px;
-	left: 1070px
+	top: 0%;
+	right: 0%;
 }
 span.tables {
 	position: absolute;
@@ -224,14 +234,14 @@ span.tables {
     background: White;
     border-top:black;
 }
-
-
-
-
 </style>
 <title>交通費精算画面</title>
 </head>
 <body>
+<span class="img">
+<img class="img"src="/img/imgs_logo.PNG" alt="ロゴ" width="150" height="60">	
+</span>
+
 <?php if(empty($_SESSION['worklocation'])){ ?>
 	<div align="center">
 		<h2>交通費精算書</h2>
@@ -243,15 +253,10 @@ span.tables {
 	<?php if(empty($_SESSION['worklocation'])){?>
 	<span class="seisansho"> <?php } ?> <!-- $_SESSION['worklocation']に値が入っている時の処理 -->
 	
-	<?php if(empty($_SESSION['worklocation'])){ ?>
-		 <span class="sample"> <img class="img"
-			src="/img/image_2020_4_10.png" alt="ロゴ" width="100" height="100">
-	</span>
-	<?php } ?>
 
 <?php if(empty($_SESSION['worklocation'])){ ?>
 		<form method="GET" action="#">
-			<input type="button" value="テーブルに行を追加" onClick="AddTableRows();" />
+			<input type="button" value="行を追加" onClick="AddTableRows();" />
 		</form>
 		
 		<?php }	?> 
@@ -308,7 +313,10 @@ print '</span>';
 
 //精算書データを昇順に表示する処理
 if(isset($_SESSION['worklocation'])){
+//ローカル用
 $sql="SELECT * FROM tbl_checkout WHERE staff_number=:staff_number AND year_and_month BETWEEN :s_year_and_month AND :e_year_and_month ORDER BY year_and_month asc";
+// サーバー用
+// $sql="SELECT * FROM TBL_CHECKOUT WHERE staff_number=:staff_number AND year_and_month BETWEEN :s_year_and_month AND :e_year_and_month ORDER BY year_and_month asc";
 $stmt=$dbh->prepare($sql);
 $stmt->bindValue(":staff_number",$staff_number,PDO::PARAM_STR);
 $stmt->bindValue(":s_year_and_month",$s_year_and_month,PDO::PARAM_STR);
@@ -390,7 +398,7 @@ if($visit == null){
 							var HTML1 = '<input type="date" name="date1[]" value="' + session[counter] + '" maxlength="20" />';
 							var HTML2 = '<input type="text" name="houmon1[]" value="' + session[counter] + '" maxlength="20" />';
 							var HTML3 = '<input type="text" name="keiro1[]" value="" size="10" maxlength="20" /> <select name="check1[]" style="width: 50px; padding: 1px;"><option value=""><option value = 2>⇔</option><option value = 1>→</option> </option></select> <input type="text" name="keiros1[]" value="" size="10" maxlength="20" />';
-							var HTML4 = '<input type="text" name="kingaku1[]" value="" size="10" maxlength="20" />';
+							var HTML4 = '<input type="text" name="kingaku1[]" value="" size="10" maxlength="20" style="text-align:right"/>';
 							var HTML5 = '';
 
 							// document.getElementById('dates').value = phpSession;
@@ -450,7 +458,7 @@ else{
 
 /////////////////////////////////////////////////////////////////input type s///////////////////////////////////////////////////////////////////////////
 $X = count($rec) + count($_SESSION['houmon']);
-if($X > 9 || isset($_SESSION['worklocation'])){
+if($count >= 9){
 for ($i = 0; $i < $count ; $i++){
 if(isset($_SESSION['date'][$i])){
 	$date = substr($_SESSION['date'][$i], 0,7); 
@@ -532,7 +540,7 @@ if(isset($_SESSION['date'][$i])){
 		?>
 					<td><input type="text"
 						value="<?php if(isset($visit[$i])){print $visit[$i];} ?>"
-						name="houmon[]" maxlength="20"></td>
+						name="houmon[]" ></td>
 					<?php }
 		else{
 			if(empty($_SESSION['houmon'][$i])){
@@ -540,21 +548,23 @@ if(isset($_SESSION['date'][$i])){
 				?>
 					<td><input type="text"
 						value="<?php print $_SESSION['houmon'][$i]?>" name="houmon[]"
-						maxlength="20"></td>
+						></td>
 					<?php
 			}
 			else{?>
 					<td><input type="text"
 						value="<?php print $_SESSION['houmon'][$i]?>" name="houmon[]"
-						maxlength="20"
 						style="background-color: #FADBDA; border-color: red;"></td>
 					<?php
 			}
-		}
+		}elseif(mb_strlen($_SESSION['houmon'][$i]) >= 20){ ?>
+			<td><input type="text"
+						value="<?php print $_SESSION['houmon'][$i]?>" name="houmon[]"
+						style="background-color: #FADBDA; border-color: red;"></td>
+		 <?php }
 		else{?>
 					<td><input type="text"
-						value="<?php print $_SESSION['houmon'][$i]?>" name="houmon[]"
-						maxlength="20"></td>
+						value="<?php print $_SESSION['houmon'][$i]?>" name="houmon[]"></td>
 					<?php
 		}
 			}
@@ -575,26 +585,31 @@ if(isset($_SESSION['date'][$i])){
 		if($_SESSION['err'] == 2){?>
 					<td><input type="text"
 						value="<?php if(isset($Point_of_departure[$i])){print $Point_of_departure[$i];}?>"
-						name="keiro[]" size="10" maxlength="20"> <?php } 
+						name="keiro[]" size="10"> <?php } 
 else{
 	if(empty($_SESSION['keiro'][$i])){
 		if($_SESSION['date'][$i] == "" && $_SESSION['houmon'][$i] == "" && $_SESSION['keiro'][$i] == "" && $_SESSION['check'][$i] == "" && $_SESSION['keiros'][$i] == "" && $_SESSION['kingaku'][$i] == ""){
 		?>
 					<td><input type="text"
 						value="<?php print $_SESSION['keiro'][$i]?>" name="keiro[]"
-						size="10" maxlength="20"> <?php
+						size="10" > <?php
 	}
 	else{?>
 					<td><input type="text"
 						value="<?php print $_SESSION['keiro'][$i]?>" name="keiro[]"
-						size="10" maxlength="20"
+						size="10" 
 						style="background-color: #FADBDA; border-color: red;"> <?php
 	}
-}
+}elseif(mb_strlen($_SESSION['keiro'][$i]) >= 20){ ?>
+	<td><input type="text"
+	value="<?php print $_SESSION['keiro'][$i]?>" name="keiro[]"
+	size="10" 
+	style="background-color: #FADBDA; border-color: red;">
+<?php }
 else{?>
 					<td><input type="text"
 						value="<?php print $_SESSION['keiro'][$i]?>" name="keiro[]"
-						size="10" maxlength="20"> <?php
+						size="10"> <?php
 }
 	}
 		}
@@ -694,7 +709,7 @@ else{
 		if($_SESSION['err'] == 2){?>
 										<input type="text"
 										value="<?php if(isset($Point_of_Arrival[$i])){ print $Point_of_Arrival[$i]; } ?>"
-										name="keiros[]" size="10" maxlength="20">
+										name="keiros[]" size="10" >
 										<?php } 
 else{
 	if(empty($_SESSION['keiros'][$i])){
@@ -702,21 +717,26 @@ else{
 		?>
 										<input type="text"
 										value="<?php print $_SESSION['keiros'][$i]?>" name="keiros[]"
-										size="10" maxlength="20">
+										size="10" >
 										<?php
 	}
 	else{?>
 										<input type="text"
 										value="<?php print $_SESSION['keiros'][$i]?>" name="keiros[]"
-										size="10" maxlength="20"
+										size="10" 
 										style="background-color: #FADBDA; border-color: red;">
 										<?php
 	}
-}
+	}elseif(mb_strlen($_SESSION['keiros'][$i]) >= 20){?>
+	<input type="text"
+										value="<?php print $_SESSION['keiros'][$i]?>" name="keiros[]"
+										size="10" 
+										style="background-color: #FADBDA; border-color: red;">
+<?php }
 else{?>
 										<input type="text"
 										value="<?php print $_SESSION['keiros'][$i]?>" name="keiros[]"
-										size="10" maxlength="20">
+										size="10">
 										<?php
 }
 	}
@@ -728,51 +748,56 @@ else{?>
 		if($_SESSION['err'] == 2){?>
 					<td><input type="text"
 						value="<?php if(isset($Settlement_amount[$i])){print $Settlement_amount[$i];} ?>"
-						name="kingaku[]" size="10" maxlength="20"></td>
+						name="kingaku[]" size="10"style="text-align:right"></td>
 					<?php } 
 else{
-	if(empty($_SESSION['kingaku'][$i])){
+	if(empty($_SESSION['kingaku'][$i]) && "0" !== $_SESSION['kingaku'][$i]){
 		if($_SESSION['date'][$i] == "" && $_SESSION['houmon'][$i] == "" && $_SESSION['keiro'][$i] == "" && $_SESSION['check'][$i] == "" && $_SESSION['keiros'][$i] == "" && $_SESSION['kingaku'][$i] == ""){
 		?>
 					<td><input type="text"
 						value="<?php print $_SESSION['kingaku'][$i]?>" name="kingaku[]"
-						size="10" maxlength="20"></td>
+						size="10"style="text-align:right"></td>
 					<?php
 	}
 	else{?>
 					<td><input type="text"
 						value="<?php print $_SESSION['kingaku'][$i]?>" name="kingaku[]"
-						size="10" maxlength="20"
-						style="background-color: #FADBDA; border-color: red;"></td>
+						size="10"
+						style="background-color: #FADBDA; border-color: red; text-align:right;"></td>
 					<?php
 	}
-}
+}elseif(mb_strlen($_SESSION['kingaku'][$i]) >= 7){?>
+					<td><input type="text"
+						value="<?php print $_SESSION['kingaku'][$i]?>" name="kingaku[]"
+						size="10"
+						style="background-color: #FADBDA; border-color: red; text-align:right;"></td>
+<?php	}
 elseif(preg_match("/^[0-9]+$/", $_SESSION['kingaku'][$i])==false) {
 	?>
 					<td><input type="text"
 						value="<?php print $_SESSION['kingaku'][$i]?>" name="kingaku[]"
-						size="10" maxlength="20"
-						style="background-color: #FADBDA; border-color: red;"></td>
+						size="10"
+						style="background-color: #FADBDA; border-color: red; text-align:right;"></td>
+					<?php
+}
+elseif(substr($_SESSION['kingaku'][$i],0,1) == 0){
+	?>
+					<td><input type="text"
+						value="<?php print $_SESSION['kingaku'][$i]?>" name="kingaku[]"
+						size="10"
+						style="background-color: #FADBDA; border-color: red; text-align:right;"></td>
 					<?php
 
 }
 else{?>
 					<td><input type="text"
 						value="<?php print $_SESSION['kingaku'][$i]?>" name="kingaku[]"
-						size="10" maxlength="20"></td>
+						size="10" maxlength="20"style="text-align:right"></td>
 					<?php
 }
 	}
 		}
 		 ?>
-
-					<?php if(isset($_SESSION['worklocation'])){?>
-					<td><div align="right">
-							<?php  print  $en . $Settlement_amount[$i]?>
-
-						</div></td>
-					<?php } ?>
-
 					<!-- //チェックボックス -->
 					<?php if(empty($_SESSION['worklocation'])){
 			if(isset($year_and_month[$i])){
@@ -876,7 +901,7 @@ else{?>
 					?>
 								<td><input type="text"
 									value="<?php if(isset($visit[$i])){print $visit[$i];} ?>"
-									name="houmon[]" maxlength="20"></td>
+									name="houmon[]"></td>
 								<?php }
 					else{
 						if(empty($_SESSION['houmon'][$i])){
@@ -884,21 +909,22 @@ else{?>
 							?>
 								<td><input type="text"
 									value="<?php print $_SESSION['houmon'][$i]?>" name="houmon[]"
-									maxlength="20"></td>
+									></td>
 								<?php
 						}
-						else{?>
+						 else{?>
 								<td><input type="text"
 									value="<?php print $_SESSION['houmon'][$i]?>" name="houmon[]"
-									maxlength="20"
+									
 									style="background-color: #FADBDA; border-color: red;"></td>
 								<?php
 						}
+
 					}
 					else{?>
 								<td><input type="text"
 									value="<?php print $_SESSION['houmon'][$i]?>" name="houmon[]"
-									maxlength="20"></td>
+									></td>
 								<?php
 					}
 						}
@@ -919,26 +945,26 @@ else{?>
 					if($_SESSION['err'] == 2){?>
 								<td><input type="text"
 									value="<?php if(isset($Point_of_departure[$i])){print $Point_of_departure[$i];}?>"
-									name="keiro[]" size="10" maxlength="20"> <?php } 
+									name="keiro[]" size="10" > <?php } 
 			else{
 				if(empty($_SESSION['keiro'][$i])){
 					if($_SESSION['date'][$i] == "" && $_SESSION['houmon'][$i] == "" && $_SESSION['keiro'][$i] == "" && $_SESSION['check'][$i] == "" && $_SESSION['keiros'][$i] == "" && $_SESSION['kingaku'][$i] == ""){
 					?>
 								<td><input type="text"
 									value="<?php print $_SESSION['keiro'][$i]?>" name="keiro[]"
-									size="10" maxlength="20"> <?php
+									size="10" > <?php
 				}
 				else{?>
 								<td><input type="text"
 									value="<?php print $_SESSION['keiro'][$i]?>" name="keiro[]"
-									size="10" maxlength="20"
+									size="10" 
 									style="background-color: #FADBDA; border-color: red;"> <?php
 				}
 			}
 			else{?>
 								<td><input type="text"
 									value="<?php print $_SESSION['keiro'][$i]?>" name="keiro[]"
-									size="10" maxlength="20"> <?php
+									size="10"> <?php
 			}
 				}
 					}
@@ -1038,7 +1064,7 @@ else{?>
 					if($_SESSION['err'] == 2){?>
 													<input type="text"
 													value="<?php if(isset($Point_of_Arrival[$i])){ print $Point_of_Arrival[$i]; } ?>"
-													name="keiros[]" size="10" maxlength="20">
+													name="keiros[]" size="10" >
 													<?php } 
 			else{
 				if(empty($_SESSION['keiros'][$i])){
@@ -1046,13 +1072,13 @@ else{?>
 					?>
 													<input type="text"
 													value="<?php print $_SESSION['keiros'][$i]?>" name="keiros[]"
-													size="10" maxlength="20">
+													size="10" >
 													<?php
 				}
 				else{?>
 													<input type="text"
 													value="<?php print $_SESSION['keiros'][$i]?>" name="keiros[]"
-													size="10" maxlength="20"
+													size="10" 
 													style="background-color: #FADBDA; border-color: red;">
 													<?php
 				}
@@ -1060,7 +1086,7 @@ else{?>
 			else{?>
 													<input type="text"
 													value="<?php print $_SESSION['keiros'][$i]?>" name="keiros[]"
-													size="10" maxlength="20">
+													size="10" >
 													<?php
 			}
 				}
@@ -1071,8 +1097,8 @@ else{?>
 								<?php if(empty($_SESSION['worklocation'])){
 					if($_SESSION['err'] == 2){?>
 								<td><input type="text"
-									value="<?php if(isset($Settlement_amount[$i])){print $Settlement_amount[$i];} ?>"
-									name="kingaku[]" size="10" maxlength="20"></td>
+									value="<?php if(isset($Settlement_amount[$i])){print $Settlement_amount[$i];}?>"
+									name="kingaku[]" size="10" style="text-align:right"></td>
 								<?php } 
 			else{
 				if(empty($_SESSION['kingaku'][$i])){
@@ -1080,30 +1106,39 @@ else{?>
 					?>
 								<td><input type="text"
 									value="<?php print $_SESSION['kingaku'][$i]?>" name="kingaku[]"
-									size="10" maxlength="20"></td>
+									size="10"style="text-align:right"></td>
 								<?php
 				}
 				else{?>
 								<td><input type="text"
 									value="<?php print $_SESSION['kingaku'][$i]?>" name="kingaku[]"
-									size="10" maxlength="20"
-									style="background-color: #FADBDA; border-color: red;"></td>
+									size="10"
+									style="background-color: #FADBDA; border-color: red;"style="text-align:right"></td>
 								<?php
 				}
+			}
+			elseif(substr($_SESSION['kingaku'][$i],0,1) == 0){
+				?>
+								<td><input type="text"
+									value="<?php print $_SESSION['kingaku'][$i]?>" name="kingaku[]"
+									size="10"
+									style="background-color: #FADBDA; border-color: red;"style="text-align:right"></td>
+								<?php
+			
 			}
 			elseif(preg_match("/^[0-9]+$/", $_SESSION['kingaku'][$i])==false) {
 				?>
 								<td><input type="text"
 									value="<?php print $_SESSION['kingaku'][$i]?>" name="kingaku[]"
-									size="10" maxlength="20"
-									style="background-color: #FADBDA; border-color: red;"></td>
+									size="10"
+									style="background-color: #FADBDA; border-color: red;"style="text-align:right"></td>
 								<?php
 			
 			}
 			else{?>
 								<td><input type="text"
 									value="<?php print $_SESSION['kingaku'][$i]?>" name="kingaku[]"
-									size="10" maxlength="20"></td>
+									size="10"style="text-align:right"></td>
 								<?php
 			}
 				}
@@ -1162,7 +1197,7 @@ if($rec3 == false){
 }
 if($month == $years){
 	if($rec3['staff_number'] == $staff_number){
-	print'￥'.$rec3["SUM(Settlement_amount)"];
+			print'￥'.$rec3["SUM(Settlement_amount)"];
 		}
 	}
 }
@@ -1201,7 +1236,7 @@ if($rec3 == false){
 }
 if($month == $years){
 	if($rec3['staff_number'] == $staff_number){
-	print'￥'.$rec3["SUM(Settlement_amount)"];
+	print'￥'.number_format($rec3["SUM(Settlement_amount)"]);
 		}
 	}
 }
@@ -1249,11 +1284,10 @@ elseif($rec == false){
 <?php } 
 }
 ?>
-
 				<span class="sample2"> <?php
 
 				 if(empty($_SESSION['worklocation'])){
-					?> <input type="submit"
+					?> <input type="submit" name="back"
 					style="background-color: #87cefa; width: 200px; padding: 8px;"
 					value="戻る" formaction="switch.php">
 				</span> <span class="sample3"> <input type="submit" name="save"
@@ -1261,7 +1295,7 @@ elseif($rec == false){
 					value="保存" formaction="seisansho_check.php"></span> <span
 					class="sample10"><input type="submit"
 					style="background-color: #87cefa; width: 200px; padding: 8px;"
-					value="管理者へ提出" formaction="admin_submission.php"> </span>
+					value="管理者へ提出" formaction="seisansho_submission_validation.php"> </span>
 				<?php
 				if(isset($year_and_month)==false){?>
 				<span class="sample4"> <input type="submit" name="delete"
@@ -1279,9 +1313,6 @@ elseif($rec == false){
 				}
 				 }
 				?>
-	</form> 
-
-	<form method="post" action="/kinmu/seisansho.php">
 	<!-- 月を選択するセレクトボックス -->
 	<?php if(empty($_SESSION['worklocation'])){?>
 	<span class="sample7"> <nobr>
@@ -1291,7 +1322,7 @@ elseif($rec == false){
 					print '<option value=""></option>';
 
 
-  for ($i = 0; $i <=6 ; $i++) {
+  for ($i = 0; $i <6 ; $i++) {
    if(isset($month)){
        $selected=(date("Y-m",strtotime(date('Y-m-01')."-$i month"))==$month ?" selected":"");
    }
@@ -1301,7 +1332,6 @@ elseif($rec == false){
 ?> <?php if(isset($_SESSION['errmsg1']) || isset($_SESSION['errmsg2']) || isset($_SESSION['errmsg3']) || isset($_SESSION['errmsg4']) || isset($_SESSION['errmsg5']) || isset($_SESSION['errmsg6'])){ ?>
 		<input type="submit" name="hyouji" value="表示" disabled> <?php 
 	}else{?> <input type="submit" name="hyouji" value="表示">
-	</form>
 	<?php
 	}
 		} 
@@ -1314,19 +1344,9 @@ elseif($rec == false){
 
 		<table style="border: none" cellspacing="0" cellpadding="1"
 			bordercolor="#333333" " align="left">
-			<!-- <tr>
-				<td width="60px" align="center">凡例</td>
-			</tr>
-			<tr>
-				<td width="60px" align="center">往復</td>
-				<td width="60px" align="center" style="border: none">⇔</td>
-			</tr>
-			<tr>
-				<td width="60px" align="center">片道</td>
-				<td width="60px" align="center" style="border: none">→</td>
-			</tr> -->
+
 		</table>
-		
+		</form> 
 		
 		<?php
 
@@ -1334,15 +1354,11 @@ elseif($rec == false){
 	print 'システムエラーが発生しました';
 	exit();
 }
-//印刷ボタンの変数をクリア
-if(isset($_SESSION['worklocation'])){
-	unset($_SESSION['worklocation']);
- }
 ?>
 </body>
 </html>
 <?php
-
+//エラーメッセージをリセット
 unset($_SESSION['errmsg1']);
 unset($_SESSION['errmsg2']);
 unset($_SESSION['errmsg3']);
@@ -1350,14 +1366,4 @@ unset($_SESSION['errmsg4']);
 unset($_SESSION['errmsg5']);
 unset($_SESSION['errmsg6']);
 unset($_SESSION['errmsg7']);
-?>
-<?php
-	//改ページする処理
-// if(count($rec) >= 15 && count($rec) < 23){
-// 	print'<div style="page-break-after: always;"></div>';
-// 	}
-// 	if(count($rec) >= 44 && count($rec) <= 50){
-// 		print'<div style="page-break-after: always;"></div>';
-// 	}
-
 ?>

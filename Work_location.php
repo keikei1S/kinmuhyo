@@ -13,18 +13,6 @@ require('kinmu_common.php');
 if (isset($_POST['worklocation'])) {
     $_SESSION['worklocation'] = $_POST['worklocation'];
 }
-?>
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title></title>
-<link rel="stylesheet" href="/css/work_location.css">
-</head>
-<body>
-	<div align="center">
-		<?php
-
 try {
     // //////////////////データベースの読込 S//////////////////////
 	$dbh = db_connect();
@@ -51,10 +39,15 @@ try {
 	$belongssstmt3->execute();
 
 	//tbl_belongssの値を全て取得
-	$belongsssql4 = 'select * FROM  TBL_BELONGSS';
+	$belongsssql4 = 'select * FROM  TBL_BELONGSS ORDER BY TBL_BELONGSS.update_date DESC';
 	// $belongsssql4 = 'select * FROM  tbl_belongss';
 	$belongssstmt4 = $dbh->prepare($belongsssql4);
 	$belongssstmt4->execute();
+	$belongssrec4 = $belongssstmt4->fetch(PDO::FETCH_ASSOC);
+	$modify = $belongssrec4["last_modified"];
+	$update = substr($belongssrec4["update_date"],0,10);
+
+
 
 	$dbh = null;
 	// ////////////////データベースの読込 E//////////////////////
@@ -86,7 +79,24 @@ try {
 		$opening_hours = $_SESSION['strat'];
 		$closing_hours = $_SESSION['end'];
 	}
+	?>
 
+	<!DOCTYPE html>
+	<html>
+	<head>
+	<meta charset="UTF-8">
+	<title>勤務地情報編集</title>
+	<link rel="stylesheet" href="/css/work_location.css">
+	</head>
+	<body>
+	<?php
+		$modify_user= kinmu_common::staff_table($modify);
+		print "最終更新者:".$modify_user["familyname"].$modify_user["firstname"];
+		print "</br>";
+		print "最終更新日:".$update;
+	?>
+		<div align="center">
+<?php
 	print '<form method="post">';
 
 	print '<span class="sample97">
@@ -94,7 +104,7 @@ try {
     alt="画像のサンプル" width="150px" height="60px">
     </span>';
 
-	print '<h3>勤務地情報の登録</h3>';
+	print '<h3 style="margin-top:-35px;">勤務地情報の登録</h3>';
 	print '<span class="sample5">';
 	print '<label><strong>勤務ID';
 	print '</span>';
@@ -102,25 +112,23 @@ try {
 	print '<span class="sample3">';
   if(isset($_POST['display'])){
 	   print  $work_id;
-  }
-  if(isset($work_id)){
-    $_SESSION["kinmuchi"]=$work_id;
-  }
+		 unset($_SESSION["id_err"]);
+  }elseif(isset($_SESSION["id_err"])){
+		print  $work_id;
+	}
 	print '</span>';
 	print '<br>';
-
+	if(isset($_SESSION["id_err"])){
+		print '<font color="red">';
+		print $_SESSION["id_err"];
+		print '</font>';
+	}
+	if(isset($work_id)){
+		$_SESSION["kinmuchi"]=$work_id;
+	}
 	print '<span class="sample11">';
 	print '<font color="red">';
 	$belongssrec3 = $belongssstmt3->fetchall(PDO::FETCH_ASSOC);
-	foreach($belongssrec3 as $belongssre){
-		if(empty($_POST['display'])){
-			if(empty($_POST['tuika'])==false){
-		if($work_id == $belongssre['work_id']){
-			print '※該当の勤務IDは既に存在しています';
-		}
-	}
-}
-	}
 if(empty($_POST['display'])){
   if(isset($_SESSION["up_err"])){
     print $_SESSION["up_err"];
@@ -136,7 +144,7 @@ if(empty($_POST['display'])){
 	print '</strong></label>';
 	print '</span>';
 	print '<span class="sample4">';
-	print '<input type="text"value="' . $work_name .'" name="kinmuchiid" style="width:172px;height:19px;">';
+	print '<input type="text"value="' . $work_name .'" name="kinmuchiid" maxlength="20" style="width:172px;height:19px;">';
 	print '</span>';
 	print '<br>';
 	print '<span class="sample12">';
@@ -241,7 +249,7 @@ if(empty($_POST['display'])){
 	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</h4>';
 
 //テーブルにスクロール機能追加
-	print '<div style="height:110px; width:500px; overflow-x:scroll;">';
+	print '<div style="height:160px; width:500px; overflow-x:scroll;">';
 
 print '<table border=1  cellspacing="1" cellpadding="5">';
 print '<tr><td>';

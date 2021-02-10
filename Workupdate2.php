@@ -1,6 +1,10 @@
 <?php
 session_start();
 unset($_SESSION["up_err"]); 
+unset($_SESSION['kinmuchi']); 
+unset($_SESSION['kinmuchiid']); 
+unset($_SESSION['strat']); 
+unset($_SESSION['end']); 
 ?>
 <!DOCTYPE html>
 <html>

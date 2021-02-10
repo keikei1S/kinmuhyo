@@ -68,7 +68,7 @@ if(isset($_SESSION["err"])){
     border: dashed 0.1px #ff0000;
     color:#ff0000;
 		margin-top: -20px;
-		margin-left: 644px;
-    width:270px;
+		margin-left: 607px;
+    width:250px;
 }
 </style>

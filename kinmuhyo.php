@@ -1,11 +1,10 @@
-<!DOCTYPE HTML PUBLIC"-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<link rel="stylesheet" href="/css/kinmuhyo.css">
-<title>勤務表</title>
-</head>
-<body>
+<script language="JavaScript">
+//URLが手打ちされた場合に画面をログイン画面に返す
+var refinfo = document.referrer;
+if (!refinfo) {
+    window.location.href = 'https://www.pros-service.co.jp/kinmu/staff_login.php';
+}
+</script>
 <?php
 //セッションが開始されていなければセッションを開始する。
 if(!isset($_SESSION)){
@@ -17,28 +16,29 @@ if (isset($_SESSION["login"])==false)
 	header("Location: staff_login.php");
 	exit();
 }
-// ログイン状態のチェック
-// 不正ログインの場合ログイン画面に遷移させる
-//if($_SERVER['HTTP_REFERER']!="https://www.pros-service.co.jp/kinmu/list_of_members.php"){
-if(isset($_POST["kinmuhyou"])){
-	if(isset($_SESSION["login"])==false) {
-		header("Location:staff_login.php");
-		exit();
-	}
+if(isset($_POST["show"])){
+	unset($_SESSION['yukyu_err']);
+	unset($_SESSION['naiyou']);
+	unset($_SESSION['open_ampm']);
+	unset($_SESSION['open']);
+	unset($_SESSION['close_ampm']);
+	unset($_SESSION['close']);
+	unset($_SESSION['rest']);
+	unset($_SESSION['holiday']);
+	unset($_SESSION['shift']);
 }
 
 //勤務表保存後はセッション情報のcheck,yukyu_errを初期化する
-//if($_SERVER['HTTP_REFERER']=="https://www.pros-service.co.jp/kinmu/kinmuhyo_done.php"){
-if($_SERVER['HTTP_REFERER']=="http://localhost:8080/kinmuhyo/kinmuhyo_done.php"){
+if($_SERVER['HTTP_REFERER']=="https://www.pros-service.co.jp/kinmu/kinmuhyo_done.php"){
+//if($_SERVER['HTTP_REFERER']=="http://localhost:8080/kinmuhyo/kinmuhyo_done.php"){
 	unset($_SESSION['check']);
 	unset($_SESSION["yukyu_err"]);
 }
 //ファイル読み込み	(DB接続クラス)
 //ユーザー情報の読み込み S////////
-//ログイン画面からセッションで引き継がれた値を変数に格納
 //社員テーブルS///
-//if($_SERVER['HTTP_REFERER']!="https://www.pros-service.co.jp/kinmu/list_of_members.php"){
-if($_SERVER['HTTP_REFERER']!="http://localhost:8080/kinmuhyo/list_of_members.php"){
+if($_SERVER['HTTP_REFERER']!="https://www.pros-service.co.jp/kinmu/list_of_members.php"){
+//if($_SERVER['HTTP_REFERER']!="http://localhost:8080/kinmuhyo/list_of_members.php"){
 	$result=$_SESSION['result'];
 	require'kinmu_common.php';
 	//管理者かそうでないか（0=一般社員 1=管理者）
@@ -50,14 +50,6 @@ if($_SERVER['HTTP_REFERER']!="http://localhost:8080/kinmuhyo/list_of_members.php
 $staff_number=$result['staff_number'];
 //社員テーブルに格納されている該当の社員名
 $staff_name=$result['familyname'].$result['firstname'];
-
-//該当月の勤務地IDを取得する
-if(date("Y-").$_SESSION["month"].date("-01") > $result["old_end_month"]){
-	$work_id=$result['new_work_id'];
-}else{
-	$work_id=$result['old_work_id'];
-}
-$_SESSION['work_id']=$work_id;
 //社員テーブルE//
 
 //メソッドを参照する（サマリーテーブル）S////
@@ -67,25 +59,6 @@ $year_and_month=$kinmuhyo_summary['year_and_month'];
 //現在の有給残数
 $yukyu=$kinmuhyo_summary['remaining_paid_days'];
 $_SESSION["yukyu"]=$yukyu;
-//勤務地のみ抽出
-$work_tbl= kinmu_common::work_tbl($work_id);
-//サマリーテーブルE///
-//メソッドを参照する(勤務地テーブル)S///
-$BELONGSS= kinmu_common::BELONGSS($result['staff_number']);
-//始業時間を取得
-$opening=$BELONGSS['opening_hours'];
-$_SESSION['opening']=$opening;
-//取得した始業時間の桁数調整
-$opening_get=substr($opening,0,5);
-
-//終業時間を取得
-$closong=$BELONGSS['closing_hours'];
-$_SESSION['closong']=$closong;
-//取得した終業時間の桁数調整
-$closong_get=substr($closong,0,5);
-//勤務地名の取得
-$work_name=$BELONGSS['work_name'];
-//勤務地テーブルE///
 
 //メソッドを参照する（勤務情報）S////
 $kinmuhyo_attendance= kinmu_common::Attendance($result['staff_number']);
@@ -130,6 +103,7 @@ if($kinmuhyo_attendance!=""){
 	}
 }
 ///メソッドを参照する(勤務テーブル)E///
+
 //メソッド参照
 //実働合計(勤務表テーブルの読み込み)S////
 $sum_total= kinmu_common::sum_total($result['staff_number']);
@@ -153,8 +127,8 @@ $kinmuhyo_holiday= kinmu_holiday::Holiday("");
 //タイムゾーン設定
 date_default_timezone_set('Asia/Tokyo');
 //今月・先月の判定
-//if($_SERVER['HTTP_REFERER']!="https://www.pros-service.co.jp/kinmu/list_of_members.php"){
-if($_SERVER['HTTP_REFERER']!="http://localhost:8080/kinmuhyo/list_of_members.php"){
+if($_SERVER['HTTP_REFERER']!="https://www.pros-service.co.jp/kinmu/list_of_members.php"){
+//if($_SERVER['HTTP_REFERER']!="http://localhost:8080/kinmuhyo/list_of_members.php"){
 	if(isset($_SESSION["show"])){
 		if($_SESSION["show"]=="1"){
 			//システム日付(年)を取得
@@ -237,246 +211,275 @@ if(!empty($syuku)){
 	$count_syuku=count($sum_syuku);
 }
 //カレンダー作成E///
+//該当月の勤務地IDを取得する
+if($now_month.date("-01") > $result["old_end_month"]){
+	$work_id=$result['new_work_id'];
+}else{
+	$work_id=$result['old_work_id'];
+}
+
+$_SESSION['work_id']=$work_id;
+//勤務地のみ抽出
+$work_tbl= kinmu_common::work_tbl($work_id);
+//サマリーテーブルE///
+
+//メソッドを参照する(勤務地テーブル)S///
+$BELONGSS= kinmu_common::BELONGSS($work_id);
+//始業時間を取得
+$opening=$BELONGSS['opening_hours'];
+$_SESSION['opening']=$opening;
+//取得した始業時間の桁数調整
+$opening_get=substr($opening,0,5);
+
+//終業時間を取得
+$closong=$BELONGSS['closing_hours'];
+$_SESSION['closong']=$closong;
+//取得した終業時間の桁数調整
+$closong_get=substr($closong,0,5);
+//勤務地名の取得
+$work_name=$BELONGSS['work_name'];
+//勤務地テーブルE///
 
 //チェックの結果エラーメッセージがあれば変数に格納
 if(isset($_SESSION['err_msg'])){
 	$err_msg=$_SESSION['err_msg'];
 }
 ?>
-<div class="img">
-<img src="/img/image_2020_4_10.png" height="100" width="100" alt="ロゴ" align="right" >
-</div>
-<!-- 該当月の勤務表タイトルの表示 -->
-<? //if($_SERVER['HTTP_REFERER']!="https://www.pros-service.co.jp/kinmu/list_of_members.php"){
-if($_SERVER['HTTP_REFERER']!="http://localhost:8080/kinmuhyo/list_of_members.php"){?>
-<h3><?=$now_month?>月分勤務表</h3>
-<?$_SESSION["first_date"]=$now_month."-01";
+<!DOCTYPE HTML PUBLIC"-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <link rel="stylesheet" href="/css/kinmuhyo.css">
+    <title>勤務表</title>
+</head>
+
+<body>
+    <div class="img">
+        <img src="/img/image_2020_4_10.png" height="60" width="150" alt="ロゴ" align="right">
+    </div>
+    <!-- 該当月の勤務表タイトルの表示 -->
+    <? if($_SERVER['HTTP_REFERER']!="https://www.pros-service.co.jp/kinmu/list_of_members.php"){
+//if($_SERVER['HTTP_REFERER']!="http://localhost:8080/kinmuhyo/list_of_members.php"){?>
+    <h3><?=$now_month?>月分勤務表</h3>
+    <?$_SESSION["first_date"]=$now_month."-01";
 }else{?>
-<h3><?php print $now_month1?>月分勤務表</h3>
-<?}?>
-<!--end-->
-<!-- 有給休暇エラー -->
-<?php
+    <h3><?php print $now_month1?>月分勤務表</h3>
+    <?}?>
+    <!--end-->
+	<?php
+    if($_SERVER['HTTP_REFERER']!="https://www.pros-service.co.jp/kinmu/list_of_members.php"){
+        //if($_SERVER['HTTP_REFERER']!="http://localhost:8080/kinmuhyo/list_of_members.php"){
+	//月選択テキストボックス
+	$selected['show']=array_fill(1,2,"");
+	$show=filter_input(INPUT_POST,"show");
+	$selected["show"][$show]="selected";
+	if(isset($_SESSION["show"])){
+	$selected["show"][$_SESSION["show"]]="selected";
+	}
+	print <<<eof
+	<form method="post" action="kinmuhyo.php">
+	表示する月　
+	<select name="show" width:50px>
+	//<td>の中に変数入れる
+	<option value="1"{$selected["show"][1]}>今月</option>
+	<option value="2"{$selected["show"][2]}>先月</option>
+	</select>
+	<input name="nengetshu" type="submit" value="表示">
+	</form>
+	eof;
+    }?>
+    <!-- 有給休暇エラー -->
+    <?php
 if(isset($_SESSION["yukyu_err"])){
-print '<FONT COLOR="red">'.$_SESSION["yukyu_err"];
+	print '<FONT COLOR="red">'.$_SESSION["yukyu_err"];
+	$naiyou = $_SESSION['naiyou'];
+	$open_ampm = $_SESSION['open_ampm'];
+	$open = $_SESSION['open'];
+	$close_ampm = $_SESSION['close_ampm'];
+	$close = $_SESSION['close'];
+	$rest = $_SESSION['rest'];
+	$holiday = $_SESSION['holiday'];
+	$shift = $_SESSION['shift'];
 }elseif(isset($check_result)){
-if(in_array('NG', $check_result)){
-print "<FONT COLOR=\"red\"> 入力内容に不備があります。チェック結果・備考欄を確認してください</FONT>";
-}
+	if(in_array('NG', $check_result)){
+		print "<FONT COLOR=\"red\"> 入力内容に不備があります。チェック結果・備考欄を確認してください</FONT>";
+	}
 }?>
-</FONT>
-<!-- 氏名表示エリア -->
-<?//if($_SERVER['HTTP_REFERER']!="https://www.pros-service.co.jp/kinmu/list_of_members.php"){
-if($_SERVER['HTTP_REFERER']!="http://localhost:8080/kinmuhyo/list_of_members.php"){?>
-<table border="1">
-<tr>
-<th>　氏名　
-<td><?php print $staff_name;?>
-</td>
-</th>
-</tr>
-</table>
-<?php
-//月選択テキストボックス
-$selected['show']=array_fill(1,2,"");
-$show=filter_input(INPUT_POST,"show");
-$selected["show"][$show]="selected";
-if(isset($_SESSION["show"])){
-$selected["show"][$_SESSION["show"]]="selected";
-}
-print <<<eof
-<form method="post" action="kinmuhyo.php">
-表示する月　
-<select name="show" width:50px>
-//<td>の中に変数入れる
-<option value="1"{$selected["show"][1]}>今月</option>
-<option value="2"{$selected["show"][2]}>先月</option>
-</select>
-<input name="nengetshu" type="submit" value="表示">
-</form>
-eof;
-?>
-<!-- 該当の社員番号に紐づく勤務地IDから算出した勤務地情報を表示-->
-<table border="1">
-<tr>
-<th>始業</th>
-<?if($opening_get!=""){?>
-<td><?=$opening_get?></td>
-<?}else{?>
-<td>
-<input type="time" name="work_start" value="09:00" step="900">
-</td>
-<?}?>
-</tr>
-<tr>
-<th>終業</th>
-<?if($closong_get!=""){?>
-<td><?=$closong_get ?></td>
-<?}else{?>
-<td>
-<input type="time" name="work_end" value="18:00" step="900">
-</td>
-<?}?>
-</tr>
-<tr>
-<th>勤務地</th>
-<? if($work_id!=""){?>
-<td><?=$work_name ?></td>
-<?}else{?>
-<td>
-<?php for ($i=0; $i < count($work_tbl); $i++) {
-print "<select name='work'>";
-print "<option>".""."</option>";
-print "<option>".$work_tbl."</option>";
-print "</select>";
-}?>
-</td>
-<?}?>
-</tr>
-</table>
-<?}?>
-<?//if($_SERVER['HTTP_REFERER']!="https://www.pros-service.co.jp/kinmu/list_of_members.php"){
-if($_SERVER['HTTP_REFERER']!="http://localhost:8080/kinmuhyo/list_of_members.php"){?>
-<!-- 勤務表サマリー画面へ遷移 -->
-<form method="post" action="kinmuhyo_summary.php">
-<input type="submit" value="サマリー情報を見る">
-</form>
-<!-- ユーザー切り替え画面へ遷移 -->
-<button class="done" type=“button” onclick="location.href='switch.php'">戻る</button>
-<?}?>
-<!-- カレンダークラス -->
-<!--kinmuhyo_checkに値をpost-->
-<?if($_SERVER['HTTP_REFERER']!="http://localhost:8080/kinmuhyo/list_of_members.php"){?>
-<form method="post" action="check.php">
-<?}else{?>
-	<form method="post" action="preview.php">
-<?}?>
-<table class="calender_column">
-<?//if($_SERVER['HTTP_REFERER']!="https://www.pros-service.co.jp/kinmu/list_of_members.php"){
-if($_SERVER['HTTP_REFERER']!="http://localhost:8080/kinmuhyo/list_of_members.php"){?>
-<td class="stiky">
-<p>日</p>
-</td>
-<td class="stiky">
-<p>曜</p>
-</td>
-<td class="stiky">
-<p>作業内容</p>
-</td>
-<td class="stiky">
-<p>始業</p>
-</td>
-<td class="stiky">
-<p>終業</p>
-</td>
-<td class="stiky">
-<p>休憩</p>
-</td>
-<td class="stiky">
-<p>実働</p>
-</td>
-<td class="stiky">
-<p>普通残業</p>
-</td>
-<td class="stiky">
-<p>深夜残業</p>
-</td>
-<td class="stiky">
-<p>不足</p>
-</td>
-<td class="stiky">
-<p>備考</p>
-</td>
-<td class="stiky kyuka">
-<p>1.有給  4.前休</p>
-<p>2.振休  5.後休</p>
-<p>3.特休  6.欠勤</p>
-</td>
-<td class="stiky check">
-<p>チェック結果</p>
-</td>
-<td  class="stiky shift">
-<p>シフト</p>
-</td>
-<?}else{?>
-<td>
-<p>日</p>
-</td>
-<td>
-<p>曜</p>
-</td>
-<td>
-<p>作業内容</p>
-</td>
-<td>
-<p>始業</p>
-</td>
-<td>
-<p>終業</p>
-</td>
-<td>
-<p>休憩</p>
-</td>
-<td>
-<p>実働</p>
-</td>
-<td>
-<p>普通残業</p>
-</td>
-<td>
-<p>深夜残業</p>
-</td>
-<td>
-<p>不足</p>
-</td>
-<td>
-<p>備考</p>
-</td>
-<td class="kyuka">
-<p>1.有給  4.前休</p>
-<p>2.振休  5.後休</p>
-<p>3.特休</p>
-</td>
-<td class="check">
-<p>チェック結果</p>
-</td>
-<td  class="shift">
-<p>シフト</p>
-</td>
-<?}
+    </FONT>
+    <!-- 氏名表示エリア -->
+    <?if($_SERVER['HTTP_REFERER']!="https://www.pros-service.co.jp/kinmu/list_of_members.php"){
+//if($_SERVER['HTTP_REFERER']!="http://localhost:8080/kinmuhyo/list_of_members.php"){?>
+    <table border="1" class="work_data">
+        <tr>
+            <th class="title">　氏名　
+            <td class="b-break"><?php print $staff_name;?>
+            </td>
+            </th>
+        </tr>
+    <!-- 該当の社員番号に紐づく勤務地IDから算出した勤務地情報を表示-->
+        <tr>
+            <th class="title">始業</th>
+            <?if($opening_get!=""){?>
+            <td class="b-break"><?=$opening_get?></td>
+            <?}?>
+        </tr>
+        <tr>
+            <th class="title">終業</th>
+            <?if($closong_get!=""){?>
+            <td class="b-break"><?=$closong_get ?></td>
+            <?}?>
+        </tr>
+        <tr>
+            <th class="title">勤務地</th>
+            <? if($work_id!=""){?>
+            <td class="b-break"><?=$work_name ?></td>
+            <?}?>
+        </tr>
+    </table>
+    <?}?>
+    <?if($_SERVER['HTTP_REFERER']!="https://www.pros-service.co.jp/kinmu/list_of_members.php"){
+//if($_SERVER['HTTP_REFERER']!="http://localhost:8080/kinmuhyo/list_of_members.php"){?>
+    <!-- 勤務表サマリー画面へ遷移 -->
+    <form method="post" action="kinmuhyo_summary.php">
+        <input type="submit" value="サマリー情報を見る">
+    </form>
+    <!-- ユーザー切り替え画面へ遷移 -->
+    <button class="done" type=“button” onclick="location.href='switch.php'">戻る</button>
+    <?}?>
+    <!-- カレンダークラス -->
+    <!--kinmuhyo_checkに値をpost-->
+    <?if($_SERVER['HTTP_REFERER']!="https://www.pros-service.co.jp/kinmu/list_of_members.php"){?>
+    <form method="post" action="check.php">
+        <?}else{?>
+        <form method="post" action="preview.php">
+            <?}?>
+            <table class="calender_column">
+                <?if($_SERVER['HTTP_REFERER']!="https://www.pros-service.co.jp/kinmu/list_of_members.php"){
+//if($_SERVER['HTTP_REFERER']!="http://localhost:8080/kinmuhyo/list_of_members.php"){?>
+                <td class="stiky">
+                    <p>日</p>
+                </td>
+                <td class="stiky">
+                    <p>曜</p>
+                </td>
+                <td class="stiky">
+                    <p>作業内容</p>
+                </td>
+                <td class="stiky">
+                    <p>始業</p>
+                </td>
+                <td class="stiky">
+                    <p>終業</p>
+                </td>
+                <td class="stiky">
+                    <p>休憩</p>
+                </td>
+                <td class="stiky">
+                    <p>実働</p>
+                </td>
+                <td class="stiky">
+                    <p>普通残業</p>
+                </td>
+                <td class="stiky">
+                    <p>深夜残業</p>
+                </td>
+                <td class="stiky">
+                    <p>不足</p>
+                </td>
+                <td class="stiky">
+                    <p>備考</p>
+                </td>
+                <td class="stiky kyuka">
+                    <p>1.有給 4.前休</p>
+                    <p>2.振休 5.後休</p>
+                    <p>3.特休 6.欠勤</p>
+                </td>
+                <td class="stiky check">
+                    <p>チェック結果</p>
+                </td>
+                <td class="stiky shift">
+                    <p>シフト</p>
+                </td>
+                <?}else{?>
+                <td>
+                    <p>日</p>
+                </td>
+                <td>
+                    <p>曜</p>
+                </td>
+                <td>
+                    <p>作業内容</p>
+                </td>
+                <td>
+                    <p>始業</p>
+                </td>
+                <td>
+                    <p>終業</p>
+                </td>
+                <td>
+                    <p>休憩</p>
+                </td>
+                <td>
+                    <p>実働</p>
+                </td>
+                <td>
+                    <p>普通残業</p>
+                </td>
+                <td>
+                    <p>深夜残業</p>
+                </td>
+                <td>
+                    <p>不足</p>
+                </td>
+                <td>
+                    <p>備考</p>
+                </td>
+                <td class="kyuka">
+                    <p>1.有給 4.前休</p>
+                    <p>2.振休 5.後休</p>
+                    <p>3.特休</p>
+                </td>
+                <td class="check">
+                    <p>チェック結果</p>
+                </td>
+                <td class="shift">
+                    <p>シフト</p>
+                </td>
+                <?}
 foreach($aryCalendar as $value){
 //祝日の取得
 if(!empty($sum_syuku)){
 $syukujitu_count=in_array(sprintf("%02d", $value['day']),$sum_syuku);
 }?>
-<!-- 取得した該当の曜日クラスを割り当てる -->
-<tr class="week<?php echo $value['week']?>">
-<!-- 祝日の場合日曜クラスを適用する -->
-<?if(!empty($syukujitu_count)){
+                <!-- 取得した該当の曜日クラスを割り当てる -->
+                <tr class="week<?php echo $value['week']?>">
+                    <!-- 祝日の場合日曜クラスを適用する -->
+                    <?if(!empty($syukujitu_count)){
 $value['week']="0";?>
-<tr class="week<?php echo $value['week'] ?>">
-<?}?>
-<? if($value['day'] != date('j')){ ?>
-<?}
+                <tr class="week<?php echo $value['week'] ?>">
+                    <?}?>
+                    <? if($value['day'] != date('j')){ ?>
+                    <?}
 //土日の度にカウントする(営業日算出のため)
 if($value['week']=="6"){
 $doyou[]=$i++;
 }elseif($value['week']=="0"){
 $nitisyuku[]=$i++;
 }?>
-<td>
-<?php
+                    <td>
+                        <?php
 //日付を表示
 echo $value['day'];
 ?>
-</td>
-<td>
-<!-- 月の情報をチェックに渡す -->
-<input type='hidden' name="month" value="<?=$month?>">
-<!-- 週の情報をチェックに渡す -->
-<input type='hidden' name="week[]" value="<?=$aryWeek[$value['week']]?>">
-<!-- 祝日でない場合 -->
-<?php
+                    </td>
+                    <td>
+                        <!-- 月の情報をチェックに渡す -->
+                        <input type='hidden' name="month" value="<?=$month?>">
+                        <!-- 週の情報をチェックに渡す -->
+                        <input type='hidden' name="week[]" value="<?=$aryWeek[$value['week']]?>">
+                        <!-- 祝日でない場合 -->
+                        <?php
 if(empty($syukujitu_count)){
 echo $aryWeek[$value['week']];
 //祝日の場合
@@ -484,26 +487,26 @@ echo $aryWeek[$value['week']];
 $value['week']=	date('w', strtotime(substr($now_month,0,4).$month.sprintf('%02d', $value['day'])));
 echo $aryWeek[$value['week']];
 }?>
-</td>
-<?//if($_SERVER['HTTP_REFERER']!="https://www.pros-service.co.jp/kinmu/list_of_members.php"){
-if($_SERVER['HTTP_REFERER']!="http://localhost:8080/kinmuhyo/list_of_members.php"){?>
-<td>
-<?
+                    </td>
+                    <?if($_SERVER['HTTP_REFERER']!="https://www.pros-service.co.jp/kinmu/list_of_members.php"){
+//if($_SERVER['HTTP_REFERER']!="http://localhost:8080/kinmuhyo/list_of_members.php"){?>
+                    <td>
+                        <?
 if($value['week']=="0" || $value['week']=="6" || !empty($syukujitu_count)){
 //作業内容入力欄
 if(!empty($naiyou[$value['day']-1])){?>
-<? foreach($naiyou as $key =>$sagyo){
+                        <? foreach($naiyou as $key =>$sagyo){
 if($value['day']-1==$key){?>
-<textarea name="naiyou[]" rows="3" cols="20" maxlength="20"><?=$sagyo;?></textarea>
-<?}
+                        <textarea name="naiyou[]" rows="3" cols="20" maxlength="20"><?=$sagyo;?></textarea>
+                        <?}
 }
 }else{?>
-<!-- <input type='text' name="naiyou[]"> -->
-<textarea name="naiyou[]" rows="3" cols="20" maxlength="20"></textarea>
-<?}?>
-</td>
-<td>
-<?
+                        <!-- <input type='text' name="naiyou[]"> -->
+                        <textarea name="naiyou[]" rows="3" cols="20" maxlength="20"></textarea>
+                        <?}?>
+                    </td>
+                    <td>
+                        <?
 //始業時間
 //AM/PM選択ボタン
 print "<select name=open_ampm[]>";
@@ -544,11 +547,11 @@ $selected = "";
 }
 print "<option value=\"".$t[$i]."\"{$selected}>".$t[$i]."</option>";
 }?>
-</select>
-</td>
-<!--終業時間の入力欄!-->
-<td>
-<?
+                        </select>
+                    </td>
+                    <!--終業時間の入力欄!-->
+                    <td>
+                        <?
 //AM/PM選択ボタン
 print "<select name=close_ampm[]>";
 print "<option></option>";
@@ -588,10 +591,10 @@ $selected = "";
 }
 print "<option value=\"".$t[$i]."\"{$selected}>".$t[$i]."</option>";
 }?>
-</select>
-</td>
-<td>
-<?
+                        </select>
+                    </td>
+                    <td>
+                        <?
 $t = rest_time(strtotime('00:00'));
 print "<select name=rest[]>";
 print "<option></option>";
@@ -607,10 +610,10 @@ for ($i=0; $i < count($t); $i++) {
 	print "<option value=\"".$t[$i]."\"{$selected}>".$t[$i]."</option>";
 }
 ?>
-</select>
-</td>
-<td>
-<?
+                        </select>
+                    </td>
+                    <td>
+                        <?
 //実働時間の表示域
 if(isset($total[$value['day']-1])){
 foreach($total as $key => $val){
@@ -625,9 +628,9 @@ print $val;
 }else{
 print "";
 }?>
-</td>
-<td>
-<?
+                    </td>
+                    <td>
+                        <?
 //残業時間の表示域
 if(isset($overtime_normal[$value['day']-1])){
 if($value['week']=="6"){
@@ -642,9 +645,9 @@ print $over_all;
 }
 }
 }?>
-</td>
-<td>
-<?
+                    </td>
+                    <td>
+                        <?
 //深夜残業の表示域
 if(isset($total[$value['day']-1])){
 if($value['week']!="6"){
@@ -669,15 +672,15 @@ print $over;
 }
 }
 }?>
-</td>
-<td>
-<?
+                    </td>
+                    <td>
+                        <?
 //不足の表示域
 //土日祝日の場合、不足はあり得ないため表示しない。
 print "";?>
-</td>
-<td class="biko">
-<?
+                    </td>
+                    <td class="biko">
+                        <?
 //土日祝日の場合、備考はないため表示しないが、エラーの場合があるため、エラーメッセージの処理を記載
 if(isset($err_msg[$value['day']-1])){
 foreach ((array)$err_msg as $n_msg => $msg) {
@@ -686,15 +689,15 @@ print $msg;
 }
 }
 }?>
-</td>
-<td class="kyuka">
-<!-- 土日祝日の場合、休暇フラグは不要 -->
-<select name="holiday[]" class="kyuka">
-<option value="0"></option>
-</select>
-</td>
-<td class="check">
-<?
+                    </td>
+                    <td class="kyuka">
+                        <!-- 土日祝日の場合、休暇フラグは不要 -->
+                        <select name="holiday[]" class="kyuka">
+                            <option value="0"></option>
+                        </select>
+                    </td>
+                    <td class="check">
+                        <?
 //チェック結果表示域
 if(!empty($check_result[$value['day']-1])){
 foreach ($check_result as $c_key => $chk) {
@@ -705,26 +708,27 @@ print $chk;
 }else{
 print "";
 }?>
-</td>
-<td class="shift">
-<!-- 土日祝日の場合シフトフラグは不要 -->
-<select name="shift_kinmu[]">
-<option value="0"></option>
-</select>
-</td>
-<!-- 土日祝日以外 -->
-<?}else{?>
-<?//作業内容入力欄
+                    </td>
+                    <td class="shift">
+                        <!-- 土日祝日の場合シフトフラグは不要 -->
+                        <select name="shift_kinmu[]">
+                            <option value="0"></option>
+                        </select>
+                    </td>
+                    <!-- 土日祝日以外 -->
+                    <?}else{?>
+                    <?//作業内容入力欄
 if(isset($naiyou[$value['day']-1])){?>
-<? foreach($naiyou as $key =>$sagyo){
+                    <? foreach($naiyou as $key =>$sagyo){
 if($value['day']-1==$key){?>
-<textarea name="naiyou[]" rows="3" cols="20" maxlength="20"><?=$sagyo;?></textarea><?}
+                    <textarea name="naiyou[]" rows="3" cols="20" maxlength="20"><?=$sagyo;?></textarea>
+                    <?}
 }
 }else{?>
-<textarea name="naiyou[]" rows="3" cols="20" maxlength="20"></textarea>
-<?}?>
-<td>
-<?
+                    <textarea name="naiyou[]" rows="3" cols="20" maxlength="20"></textarea>
+                    <?}?>
+                    <td>
+                        <?
 //始業時間
 //AM/PM選択ボタン
 print "<select name=open_ampm[]>";
@@ -773,11 +777,11 @@ $selected=$opening_get==$t[$i] ? " selected":"";
 }
 print "<option value=\"".$t[$i]."\"{$selected}>".$t[$i]."</option>";
 }?>
-</select>
-</td>
-<!--終業時間の入力欄!-->
-<td>
-<?
+                        </select>
+                    </td>
+                    <!--終業時間の入力欄!-->
+                    <td>
+                        <?
 //AM/PM選択ボタン
 print "<select name=close_ampm[]>";
 print "<option></option>";
@@ -827,10 +831,10 @@ $selected=$closong_get1==$t[$i] ? " selected":"";
 }
 print "<option value=\"".$t[$i]."\"{$selected}>".$t[$i]."</option>";
 }?>
-</select>
-</td>
-<td>
-<?
+                        </select>
+                    </td>
+                    <td>
+                        <?
 if(isset($weekday_rest[$value['day']-1])){
 if($weekday_rest[$value['day']-1]=="00:00"){
 print "";
@@ -845,10 +849,10 @@ print $res;
 print "";
 
 }?>
-<input type="hidden" name="rest[]" value="">
-</td>
-<td>
-<?
+                        <input type="hidden" name="rest[]" value="">
+                    </td>
+                    <td>
+                        <?
 //実働時間の表示域
 if(isset($total[$value['day']-1])){
 foreach($total as $key => $val){
@@ -863,9 +867,9 @@ print $val;
 }else{
 print "";
 }?>
-</td>
-<td>
-<?
+                    </td>
+                    <td>
+                        <?
 //残業時間の表示域
 if(isset($overtime_normal[$value['day']-1])){
 foreach($overtime_normal as $over_num => $over_all){
@@ -878,9 +882,9 @@ print $over_all;
 }
 }
 }?>
-</td>
-<td>
-<?
+                    </td>
+                    <td>
+                        <?
 //深夜残業の表示域
 if(isset($overtime_night[$value['day']-1])){
 foreach($overtime_night as $number => $night){
@@ -893,9 +897,9 @@ print $night;
 }
 }
 }?>
-</td>
-<td>
-<?
+                    </td>
+                    <td>
+                        <?
 //不足の表示域
 if(isset($Shortage[$value['day']-1])){
 foreach($Shortage as $suuji => $Short){
@@ -909,9 +913,9 @@ print $Short;
 }
 }
 ?>
-</td>
-<td class="biko">
-<?
+                    </td>
+                    <td class="biko">
+                        <?
 //備考
 if(isset($bikou)){
 //備考メッセージ表示
@@ -932,9 +936,9 @@ print $msg;
 }
 ?>
 
-</td>
-<td class="kyuka">
-<?
+                    </td>
+                    <td class="kyuka">
+                        <?
 //休暇フラグ
 print "<select name=holiday[] class=kyuka>";
 print "<option value='0'></option>";
@@ -949,9 +953,9 @@ print "<option value=\"".$i."\"{$selected}>".$i."</option>";
 }
 print "</select>\n";
 ?>
-</td>
-<td class="check">
-<?
+                    </td>
+                    <td class="check">
+                        <?
 //チェック結果表示域
 if(!empty($check_result[$value['day']-1])){
 foreach ($check_result as $c_key => $chk) {
@@ -962,9 +966,9 @@ print $chk;
 }else{
 print "";
 }?>
-</td>
-<td class="shift">
-<?
+                    </td>
+                    <td class="shift">
+                        <?
 print "<select name=shift_kinmu[]>";
 print "<option value='0'></option>";
 for($i=1;$i<2;$i++){
@@ -978,23 +982,23 @@ print "<option value=\"".$i."\"{$selected}>".$i."</option>";
 }
 print "</select>\n";
 ?>
-</td>
-</tr>
-<?}
+                    </td>
+                </tr>
+                <?}
 
 }else{?>
-<!--  印刷プレビュー用表示画面 -->
-<td>
-<!-- 作業内容 -->
-<?foreach($naiyou as $key =>$sagyo){
+                <!--  印刷プレビュー用表示画面 -->
+                <td>
+                    <!-- 作業内容 -->
+                    <?foreach($naiyou as $key =>$sagyo){
 if($value['day']-1==$key){?>
-<p class="sagyo_comment"><?=$sagyo;?></p>
-<?}
+                    <p class="sagyo_comment"><?=$sagyo;?></p>
+                    <?}
 }?>
-</td>
-<td>
-<!-- 始業時間 -->
-<?foreach($open4 as $key =>$op4){
+                </td>
+                <td>
+                    <!-- 始業時間 -->
+                    <?foreach($open4 as $key =>$op4){
 if($value['day']-1==$key){
 	if($open_ampm[$key] == 2){
 		$open_pm1[$key] = explode(":", $op4)[0] + 12;
@@ -1010,10 +1014,10 @@ if($value['day']-1==$key){
 		print $open_pm[$key];
 	}
 }?>
-</td>
-<td>
-<!-- 終業時間 -->
-<?foreach($close4 as $key =>$cl4){
+                </td>
+                <td>
+                    <!-- 終業時間 -->
+                    <?foreach($close4 as $key =>$cl4){
 	if($value['day']-1==$key){
 		if($close_ampm[$key] == 2){
 			$close_pm1[$key] = explode(":", $cl4)[0] + 12;
@@ -1029,10 +1033,10 @@ if($value['day']-1==$key){
 			print $close_pm[$key];
 		}
 }?>
-</td>
-<td>
-<!-- 休憩時間 -->
-<?foreach($weekday_rest as $key =>$wr3){
+                </td>
+                <td>
+                    <!-- 休憩時間 -->
+                    <?foreach($weekday_rest as $key =>$wr3){
 if($value['day']-1==$key){
 if($wr3=="00:00"){
 print "";
@@ -1041,10 +1045,10 @@ print $wr3;
 }
 }
 }?>
-</td>
-<td>
-<!-- 実働時間 -->
-<?foreach($total as $key => $val){
+                </td>
+                <td>
+                    <!-- 実働時間 -->
+                    <?foreach($total as $key => $val){
 if($value['day']-1==$key){
 if($val=="00:00"){
 print "";
@@ -1053,10 +1057,10 @@ print $val;
 }
 }
 }?>
-</td>
-<td>
-<!-- 普通残業時間 -->
-<?foreach($overtime_normal as $over_num => $over_all){
+                </td>
+                <td>
+                    <!-- 普通残業時間 -->
+                    <?foreach($overtime_normal as $over_num => $over_all){
 if($value['day']-1==$over_num){
 if($over_all=="00:00"){
 print "";
@@ -1065,10 +1069,10 @@ print $over_all;
 }
 }
 }?>
-</td>
-<td>
-<!-- 深夜残業時間 -->
-<?foreach($overtime_night as $number => $night){
+                </td>
+                <td>
+                    <!-- 深夜残業時間 -->
+                    <?foreach($overtime_night as $number => $night){
 if($value['day']-1==$number){
 if($night=="00:00"){
 print "";
@@ -1077,10 +1081,10 @@ print $night;
 }
 }
 }?>
-</td>
-<td>
-<!-- 不足 -->
-<?foreach($Shortage as $suuji => $Short){
+                </td>
+                <td>
+                    <!-- 不足 -->
+                    <?foreach($Shortage as $suuji => $Short){
 if($value['day']-1==$suuji){
 if($Short!="" && $Short=="00:00"){
 print "";
@@ -1089,80 +1093,82 @@ print $Short;
 }
 }
 }?>
-</td>
-<td>
-<!-- 備考 -->
-<?foreach ((array)$bikou as $n_bikou => $bk) {
+                </td>
+                <td>
+                    <!-- 備考 -->
+                    <?foreach ((array)$bikou as $n_bikou => $bk) {
 if($value['day']-1==$n_bikou){
 print $bk;
 }
 }?>
-</td>
-<!-- 以下は画面上表示するが、印刷はしない -->
-<!-- 休暇フラグ -->
-<td class="kyuka">
-<?foreach($holiday as $key =>$holi){
+                </td>
+                <!-- 以下は画面上表示するが、印刷はしない -->
+                <!-- 休暇フラグ -->
+                <td class="kyuka">
+                    <?foreach($holiday as $key =>$holi){
 if($value['day']-1==$key){
 if($holi!="0"){
 print $holi;
 }
 }
 }?>
-</td>
-<!-- チェック結果 -->
-<td class="check">
-<?php foreach ($check_result as $c_key => $chk) {
+                </td>
+                <!-- チェック結果 -->
+                <td class="check">
+                    <?php foreach ($check_result as $c_key => $chk) {
 if($value['day']-1==$c_key){
 print $chk;
 }
 }?>
-</td>
-<!-- シフトフラグ -->
-<td class="shift">
-<?php foreach($shift as $key =>$shi){
+                </td>
+                <!-- シフトフラグ -->
+                <td class="shift">
+                    <?php foreach($shift as $key =>$shi){
 if($value['day']-1==$key){
 if($shi!="0"){
 print $shi;
 }
 }
 }?>
-</td>
-<?}
+                </td>
+                <?}
 }?>
-<?//if($_SERVER['HTTP_REFERER']!="https://www.pros-service.co.jp/kinmu/list_of_members.php"){
-if($_SERVER['HTTP_REFERER']!="http://localhost:8080/kinmuhyo/list_of_members.php"){
+                <?if($_SERVER['HTTP_REFERER']!="https://www.pros-service.co.jp/kinmu/list_of_members.php"){
+//if($_SERVER['HTTP_REFERER']!="http://localhost:8080/kinmuhyo/list_of_members.php"){
 //当月データなしかつ、先月ステータス2以外の時は保存ボタン非活性
 if($year_and_month!=$comparison_month){
 if($kinmuhyo_summary['status']=="0" || $kinmuhyo_summary['status']=="1" || $year_and_month==NULL){?>
-<input name="tochu" type="submit" disabled value="保存" class="save" style="margin-top: -100px">
-<?}else{?>
-<input name="tochu" type="submit" value="保存" class="save" style="margin-top: -100px">
-<?}
+                <input name="tochu" type="submit" disabled value="保存" class="save" style="margin-top: -100px">
+                <?}else{?>
+                <input name="tochu" type="submit" value="保存" class="save" style="margin-top: -100px">
+                <?}
 //当月データあり
 }else{
 	//管理者確認が済の場合は勤務表の保存を不可とする
 	if($kinmuhyo_summary['status']=="4"){?>
-	<input name="tochu" type="submit" disabled value="保存" class="save" style="margin-top: -100px">
-<?}else{?>
-	<input name="tochu" type="submit" value="保存" class="save" style="margin-top: -100px">
-<?}?>
-<?}?>
-</form>
-</table>
-<table border="1" class="second_tbl">
-<td class="sum_title" style="width: 60px"><p>合計</p></td>
-<td style="width: 80px; text-align: center">
-<!-- テーブルに格納された実働時間の合計を表示 -->
-<?php if($sum_total["total_time"]!=""){
+                <input name="tochu" type="submit" disabled value="保存" class="save" style="margin-top: -100px">
+                <?}else{?>
+                <input name="tochu" type="submit" value="保存" class="save" style="margin-top: -100px">
+                <?}?>
+                <?}?>
+        </form>
+        </table>
+        <table border="1" class="second_tbl">
+            <td class="sum_title" style="width: 70px">
+                <p>合計</p>
+            </td>
+            <td style="width: 70px; text-align: center">
+                <!-- テーブルに格納された実働時間の合計を表示 -->
+                <?php if($sum_total["total_time"]!=""){
 $sum_total["total_time"] = substr($sum_total["total_time"], 0, -3);
 print $sum_total["total_time"];
 }else{
 print "00:00";
 }?>
-</td>
-<td style="width: 95px; text-align: center">
-<!-- テーブルに格納された残業時間の合計を表示 -->
-<?php if($sum_overtime["total_time"]!=""){
+            </td>
+            <td style="width: 70px; text-align: center">
+                <!-- テーブルに格納された残業時間の合計を表示 -->
+                <?php if($sum_overtime["total_time"]!=""){
 if($sum_overtime["total_time"]!="00:00"){
 $sum_overtime["total_time"] = substr($sum_overtime["total_time"], 0, -3);
 print $sum_overtime["total_time"];
@@ -1172,10 +1178,10 @@ print "00:00";
 }else{
 print "00:00";
 }?>
-</td>
-<td style="width: 95px; text-align: center">
-<!-- テーブルに格納された深夜残業時間の合計を表示 -->
-<?php if($sum_overtime_night["total_time"]!=""){
+            </td>
+            <td style="width: 70px; text-align: center">
+                <!-- テーブルに格納された深夜残業時間の合計を表示 -->
+                <?php if($sum_overtime_night["total_time"]!=""){
 if($sum_overtime_night["total_time"]!="00:00"){
 $sum_overtime_night["total_time"] = substr($sum_overtime_night["total_time"], 0, -3);
 print $sum_overtime_night["total_time"];
@@ -1185,10 +1191,10 @@ print "00:00";
 }else{
 print "00:00";
 }?>
-</td>
-<td style="width: 70px; text-align: center">
-<!-- テーブルに格納された不足時間の合計を表示 -->
-<?php if($sum_short["total_time"]!=""){
+            </td>
+            <td style="width: 70px; text-align: center">
+                <!-- テーブルに格納された不足時間の合計を表示 -->
+                <?php if($sum_short["total_time"]!=""){
 if($sum_short["total_time"]!="00:00"){
 $sum_short["total_time"] = substr($sum_short["total_time"], 0, -3);
 print $sum_short["total_time"];
@@ -1198,11 +1204,11 @@ print "00:00";
 }else{
 print "00:00";
 }?>
-</td>
-</table>
-<?}?>
-<!-- 土日祝日を足し、足した結果当月日数から引く -->
-<?php
+            </td>
+        </table>
+        <?}?>
+        <!-- 土日祝日を足し、足した結果当月日数から引く -->
+        <?php
 $kyuujitu=array_merge($doyou, $nitisyuku);
 //営業日を算出
 $eigyoubi = $value['day']-count($kyuujitu);

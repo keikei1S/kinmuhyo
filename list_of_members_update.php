@@ -14,6 +14,7 @@ require_once("kinmu_common.php");
 
 //変数に格納
 if(isset($_SESSION["post"])){
+  $modify = $_SESSION["result"]["staff_number"];
   $staff = $_SESSION["post"]['staff_number'];
   $familyname = $_SESSION["post"]['familyname'];
   $firstname = $_SESSION["post"]['firstname'];
@@ -36,6 +37,7 @@ if(isset($_SESSION["post"])){
 unset($_SESSION["post"]);
 
 //変数のデータ処理
+$modify=htmlspecialchars($modify,ENT_QUOTES,'UTF-8');
 $staff=htmlspecialchars($staff,ENT_QUOTES,'UTF-8');
 $firstname=htmlspecialchars($firstname,ENT_QUOTES,'UTF-8');
 $familyname=htmlspecialchars($familyname,ENT_QUOTES,'UTF-8');
@@ -58,7 +60,7 @@ try
   $dbh = db_connect();
   $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
   if($old_work_id!=""){
-    $sql = "UPDATE TBL_STAFF SET familyname=?,familyname_kana=?,firstname=?,firstname_kana=?,email=?,hire_date=?,retirement_date=?,holiday_with_pay=?,admin_flag=?,new_work_id=?,new_start_month=?,old_work_id=?,old_start_month=?,old_end_month=? WHERE staff_number=?";
+    $sql = "UPDATE TBL_STAFF SET familyname=?,familyname_kana=?,firstname=?,firstname_kana=?,email=?,hire_date=?,retirement_date=?,holiday_with_pay=?,admin_flag=?,new_work_id=?,new_start_month=?,old_work_id=?,old_start_month=?,old_end_month=?,last_modified=?,update_date=? WHERE staff_number=?";
     $stmt = $dbh->prepare($sql);
     $data[] = $familyname;
     $data[] = $familyname_kana;
@@ -74,9 +76,11 @@ try
     $data[] = $old_work_id;
     $data[] = $old_start_month;
     $data[] = $old_end_month;
+    $data[] = $modify;
+    $data[] = date("Y-m-d H:i:s");
     $data[] = $staff;
   }else{
-    $sql = "UPDATE TBL_STAFF SET familyname=?,familyname_kana=?,firstname=?,firstname_kana=?,email=?,hire_date=?,retirement_date=?,holiday_with_pay=?,admin_flag=?,new_work_id=?,new_start_month=? WHERE staff_number=?";
+    $sql = "UPDATE TBL_STAFF SET familyname=?,familyname_kana=?,firstname=?,firstname_kana=?,email=?,hire_date=?,retirement_date=?,holiday_with_pay=?,admin_flag=?,new_work_id=?,new_start_month=?,last_modified=?,update_date=? WHERE staff_number=?";
     $stmt = $dbh->prepare($sql);
     $data[] = $familyname;
     $data[] = $familyname_kana;
@@ -89,6 +93,8 @@ try
     $data[] = $admin_flag;
     $data[] = $new_work_id;
     $data[] = $new_start_month;
+    $data[] = $modify;
+    $data[] = date("Y-m-d H:i:s");
     $data[] = $staff;
   }
   $stmt->execute($data);

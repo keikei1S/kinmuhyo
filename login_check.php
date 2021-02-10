@@ -23,10 +23,10 @@ $err = [];
 //社員番号のエラーチェック
 if($staff_number==""){
 	$err['staff_number'] = '入力必須項目です。<br/>';
-}elseif(preg_match('/^([0-9]{4})$/', $staff_number) == false){
-	$err['staff_number'] =  "4桁で入力してください。";
 }elseif (preg_match("/[^0-9]/", $staff_number)) {
 	$err['staff_number'] = "半角数字で入力してください。";
+}elseif(preg_match('/^([0-9]{4})$/', $staff_number) == false){
+	$err['staff_number'] =  "4桁で入力してください。";
 }
 //パスワードのエラーチェック
 $passlength=mb_strlen($pass);
@@ -50,7 +50,8 @@ try
 //DB接続
 $dbh = db_connect();
 $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-$sql="SELECT `staff_number`, `familyname`, `firstname`,  `password`, `email`, `admin_flag`, `holiday_with_pay`, `new_work_id`, `new_start_month`, `new_end_month`, `old_work_id`, `old_start_month`, `old_end_month`,`retirement_date` FROM `TBL_STAFF` WHERE staff_number=:staff_number";
+//$sql="SELECT `staff_number`, `familyname`, `firstname`,  `password`, `email`, `admin_flag`, `holiday_with_pay`, `new_work_id`, `new_start_month`, `new_end_month`, `old_work_id`, `old_start_month`, `old_end_month`,`retirement_date` FROM `TBL_STAFF` WHERE staff_number=:staff_number";
+$sql="SELECT `staff_number`, `password`,`retirement_date` FROM `TBL_STAFF` WHERE staff_number=:staff_number";
 $stmt=$dbh->prepare($sql);
 $stmt->bindValue(":staff_number",$staff_number,PDO::PARAM_STR);
 $stmt->execute();
@@ -79,12 +80,13 @@ if(password_verify($pass , $rec['password']))
 	//セッション情報の初期化
 	$_SESSION = array();
 	$_SESSION['login']=1;
-	$_SESSION['result']=$rec;
+	$_SESSION['rec']=$rec["staff_number"];
+	//$_SESSION['result']=$rec;
 	if($pass=="abc12345678"){
 		header('Location:pass_change.php');
 		exit();
 	}else{
-		//クッキーに保存し、2回目以降は自動ログインする（現状は２週間）
+		//クッキーに保存し、2回目以降は自動ログインする
 		setcookie("st_num", $staff_number);
 		setcookie("pass", $pass);
 		header('Location:switch.php');
