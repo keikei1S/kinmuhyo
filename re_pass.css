@@ -1,70 +1,91 @@
+.img_class{
+	width: 100%;
+	height: 100px;
+}
+
 .img{
-	height: 80px;
+	height: 60px;
+	width: 150px;
+	float: right;
+
 }
-.login_name{
-	font-weight: bold;
-	font-size: 14px;
+.wrapper{
+	height: 10rem;
+  	text-align: center;
 }
-.login_form{
-	text-align: center;
+
+div{
+	margin: 0,auto;
 }
-.errMsg{
-	font-size: 10px;
-    border: dashed 0.1px #ff0000;
-    color:#ff0000;
-    width:300px;
-    height:30px;
-    text-align: center;
-    margin-left:94px;
-}
+
+.login_form {
+	-webkit-box-sizing: border-box;
+	box-sizing: border-box;
+	width:100%;
+	}
+.login_form ul { /*ul要素を初期化*/
+	padding:0;
+	margin:0;
+	}
+.login_form ul li { /*li要素も初期化し、ボーダーなどを指定*/
+	list-style:none; /*リストマーカー（●）を無しに*/
+	padding: 2em;
+
+	}
+.login_form ul li:first-child { /*最初のli要素はボーダー無し*/
+	border-top:none;
+	}
+.login_form span {
+	width: 8em;
+	display:inline-block;
+	vertical-align:top;
+	}
+.login_form .txtfiled{
+	width:20%;
+	padding:3px 5px;
+	margin:0;
+	}
 .mail_btn{
-	width:100px;
-	height: 40px;
-	font-size:14px;
-	background-color: #98fb98;
-	display: block;
-  	margin: 50px 0 0 auto;
-  	position: absolute;
-  	top: 250px;
-  	left: 820px;
+	width: 120px;
+    height: 50px;
+	background-color: #a0d8ef;
+	margin-left: 300px;
+}
 
-}
-.back{
-	width: 400px;
-	margin:-60px auto;
-}
 .back_btn{
-	width:100px;
-	height:40px;
-	font-size: 14px;
-	background-color: #da70d6;
-	display: block;
-	margin: 0 0 auto 0;
+	width: 120px;
+    height: 50px;
+	background-color: #eb6ea5;
+	margin-right: 290px;
 }
-.repass{
-	margin:10px auto;
-  	width:800px;
-}
-.repass_title{
-	text-align: center;
-	font-size: 24px;
-	font-weight: bold;
-}
-form{
-	width: 400px;
-	height: 170px;
-	margin:0 auto;
-}
-.repass_name{
-	font-weight: bold;
-	font-size: 14px;
-}
-.notice{
-	width: 800px;
-	margin-top: 100px; 
-	border: dashed 0.1px black;
-    color:black;
-    text-align: center;
-    font-size: 12px;
 
+.notice{
+	margin: 2em auto;
+	padding: 1em;
+	width: 51%;
+	border: 3px dashed #c0c0c0; /*太さ・線種・色*/
+	background-color: #FFF; /* 背景色 */
+	border-radius: 1px; /*角の丸み*/
+}
+
+.login_form .login_submenu{
+	font-size: 12px;
+	margin-left: 300px;
+}
+
+.btn{
+	width: 120px;
+  height: 50px;
+	right: 50px;
+	background-color: #a0d8ef;
+	position: relative;
+}
+
+.btn_back{
+	width: 120px;
+  height: 50px;
+	background-color: #a0d8ef;
+	position: absolute;
+	margin-left: 30px;
+	margin-top: -66px;
 }

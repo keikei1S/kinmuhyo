@@ -1,0 +1,44 @@
+.box{
+	margin-top: 20px;
+}
+.sagyo_comment{
+  font-size: 10px;
+}
+
+.print_pdf{
+	width: 200px;
+}
+.back_pdf{
+	width: 200px;
+}
+
+
+@media print {
+	body {
+	-webkit-print-color-adjust: exact;
+	zoom: 64%;
+	}
+	@page {
+	 margin: 0.5cm; 
+	}
+	.preview 
+	{
+		display:none;
+	}
+	.check{
+		display:none;
+	}
+	.kyuka{
+		display:none;
+	}
+	.shift{
+		display:none;
+	}
+
+	#print{
+		display:none;
+	}
+	#back{
+		display:none;	
+	}
+}
