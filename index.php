@@ -145,9 +145,15 @@ try {
 	if(isset($_POST["change"]) || isset($_POST["hensyuu"])){
 		//社員テーブルを讀みに行く
 		$modify_user= kinmu_common::staff_table($modify);
+		if($modify_user!==false){
 		 print "最終更新者:".$modify_user["familyname"].$modify_user["firstname"];
 		 print "</br>";
 		 print "最終更新日:".$update;
+		}else{
+			print "最終更新者:退職したユーザ";
+		 print "</br>";
+		 print "最終更新日:".$update;
+		}
 	}
 	?>
 
