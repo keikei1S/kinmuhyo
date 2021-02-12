@@ -44,11 +44,10 @@ try {
 	$belongssstmt4 = $dbh->prepare($belongsssql4);
 	$belongssstmt4->execute();
 	$belongssrec4 = $belongssstmt4->fetch(PDO::FETCH_ASSOC);
-	$modify = $belongssrec4["last_modified"];
-	$update = substr($belongssrec4["update_date"],0,10);
-
-
-
+	if($belongssrec4!==false){
+		$modify = $belongssrec4["last_modified"];
+		$update = substr($belongssrec4["update_date"],0,10);
+	}
 	$dbh = null;
 	// ////////////////データベースの読込 E//////////////////////
 	error_reporting(8192);
@@ -90,10 +89,21 @@ try {
 	</head>
 	<body>
 	<?php
+	if($modify!=""){
 		$modify_user= kinmu_common::staff_table($modify);
+		if($modify_user===false){
+			$modify_user["familyname"] = "退職した";
+			$modify_user["firstname"] = "ユーザ";
+
+		}
+	}else{
+		$modify_user= kinmu_common::staff_table($_SESSION["result"]["staff_number"]);
+		$update = date("Y-m-d");
+	}
 		print "最終更新者:".$modify_user["familyname"].$modify_user["firstname"];
 		print "</br>";
 		print "最終更新日:".$update;
+
 	?>
 		<div align="center">
 <?php
