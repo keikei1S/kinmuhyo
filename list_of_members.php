@@ -59,7 +59,7 @@ if(isset($_SESSION["print_err"])){
 }
 ?>
 <!DOCTYPE HTML PUBLIC"-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
+<html lang="ja">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 	<title>社員一覧画面</title>
@@ -144,7 +144,7 @@ if(isset($_SESSION["print_err"])){
 		$_SESSION["year_month"] = $start_month;
 		try {
 			// //////////////////データベースの読込 S//////////////////////
-			define('max_view','5');
+			define('max_view','10');
 			//ステータスの値を取得する
 			//null,ブランクを削除する
 			if(isset($_POST["status"])){

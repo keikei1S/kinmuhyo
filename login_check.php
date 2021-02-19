@@ -83,12 +83,10 @@ if(password_verify($pass , $rec['password']))
 	$_SESSION['rec']=$rec["staff_number"];
 	//$_SESSION['result']=$rec;
 	if($pass=="abc12345678"){
+		$_SESSION["firtst_login"]="1";
 		header('Location:pass_change.php');
 		exit();
 	}else{
-		//クッキーに保存し、2回目以降は自動ログインする
-		setcookie("st_num", $staff_number);
-		setcookie("pass", $pass);
 		header('Location:switch.php');
 		exit();
 	}

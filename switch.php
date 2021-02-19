@@ -1,32 +1,9 @@
 <?php
 session_start();
-$_SESSION["month"] = date('m');
 
 ob_start();
 include("kinmu_common.php");
 ob_clean();
-
-unset($_SESSION['route']);
-unset($_SESSION['price']);
-unset($_SESSION['departure']);
-unset($_SESSION['Arrival']);
-unset($_SESSION["print_err"]);
-unset($_SESSION["thuki"]);
-
-unset($_SESSION["errMsg"]);
-unset($_SESSION['errMsg1']);
-unset ($_SESSION['errmsg1']);
-unset ($_SESSION['errmsg2']);
-unset ($_SESSION['errmsg3']);
-unset ($_SESSION['errmsg4']);
-unset ($_SESSION['errmsg5']);
-unset ($_SESSION['errmsg6']);
-unset($_SESSION['staffcode']);
-unset ($_SESSION['date']);
-unset ($_SESSION['err']);
-unset ($_SESSION['delete']);
-unset ($_SESSION['save']);
-unset($_SESSION['houmon']);
 
 header('Expires: -1');
 header('Cache-Control:');
@@ -52,6 +29,10 @@ if (isset($_SESSION["login"])==false)
 		header("Location: staff_login.php");
 		exit();
 	}
+	$_SESSION["month"] = date('m');
+	$login = $_SESSION["login"];
+	$_SESSION = array();
+	$_SESSION["login"] = $login;
 		//社員テーブルを読み込む
 		$tbl_staff= kinmu_common::staff_table($staff_number);
 		//変数に直す
@@ -63,7 +44,7 @@ if (isset($_SESSION["login"])==false)
 		$_SESSION["result"] = $tbl_staff;
 ?>
 <!DOCTYPE HTML PUBLIC"-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
+<html lang="ja">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>メニュー一覧画面</title>
@@ -97,7 +78,7 @@ if(mb_strlen($first_name) < $limit) {
 
 <form method="post">
 <div class="img">
-	<img class="img"src="/img/imgs_logo.PNG" alt="ロゴ" width="150" height="60">
+	<img class="img"src="https://www.pros-service.co.jp/img/image_2020_4_10.png" alt="ロゴ" width="150" height="60">
 </div>
 <div class="user">
 

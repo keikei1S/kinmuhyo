@@ -442,10 +442,7 @@ for($i = 0; $i < $now_month ; $i++){
                 $rest[$i]="01:30";
               }elseif($open_pm[$i] <= "12:00"){
                 $rest[$i]="01:00";
-              }elseif($open_pm[$i] <= "22:00"){
-                $rest[$i]="00:30";
-              }
-              else{
+              }else{
                 $rest[$i]="00:00";
               }
             }
@@ -486,7 +483,7 @@ for($i = 0; $i < $now_month ; $i++){
                 $rest[$i]="00:00";
               }
             }
-            if($close_pm[$i] >= "29:00"){
+            if($close_pm[$i] > "29:00"){
               if($open_pm[$i] < $opening){
                 $rest[$i]="03:30";
               }elseif($open_pm[$i] <= "12:00"){
@@ -501,7 +498,7 @@ for($i = 0; $i < $now_month ; $i++){
                 $rest[$i]="00:00";
               }
             }
-            if($open_pm[$i] <= "05:30"){
+            if($open_pm[$i] < "05:30"){
               $rest[$i]= AddVtime1($rest[$i],"00:30");
             }
           }
@@ -704,6 +701,7 @@ for($i = 0; $i < $now_month ; $i++){
             $overtime_night[$i]=AddVtime1($overtime_night[$i],$mornig_overtime2[$i]);
           }
 //---土曜の残業時間end---
+
 //---以降平日の場合----
 //普通残業時間の計算---start
         }else{
@@ -766,41 +764,54 @@ for($i = 0; $i < $now_month ; $i++){
               }
 
             }
-            if($close_pm[$i]>"25:00" && $close_pm[$i]<="29:00"){
-              if($open_pm[$i] <= "25:00"){
+            if($close_pm[$i] >"25:00" && $close_pm[$i]<="29:00"){
+              if($open_pm[$i] <= $base_open){
                 $overtime_night[$i] =  MinusVtime($close_pm[$i],"23:30");
                 $overtime[$i] = MinusVtime("22:00",$base_open);
-              }else{
-                $overtime_night[$i] =  MinusVtime("29:00", $open_pm[$i]);
+              }elseif($open_pm[$i] > $base_open && $open_pm[$i] <= "22:00"){
+                $overtime_night[$i] =  MinusVtime($close_pm[$i],"23:30");
+                $overtime[$i] = MinusVtime("22:00",$open_pm[$i]);
+              }elseif($open_pm[$i] > "22:00"){
+                $overtime_night[$i] =  $total[$i];
               }
             }
             if($close_pm[$i]>="29:30" && $close_pm[$i]<=$max_opening){
-              if($open_pm[$i] <= "22:30"){
+              //始業時間が所定終業時間以下の場合
+              if($open_pm[$i] <= $base_open){
+                //22時までの普通残業時間(所定終業時間を引く)
                 $overtime1[$i] = MinusVtime("22:00",$base_open);
+                //29時30分からの普通残業時間
                 $overtime2[$i] = MinusVtime($close_pm[$i],"29:30");
+                //2つの普通残業時間を足し合わせたものが普通残業時間
                 $overtime[$i] = AddVtime1($overtime1[$i],$overtime2[$i]);
-                $overtime_night[$i] =  MinusVtime("29:30","24:00");
-              }elseif($open_pm[$i] <= "25:00"){
-                $overtime_night[$i] = MinusVtime("29:30","24:00");
-
-              }elseif($open_pm[$i] <= "29:30"){
-//深夜残業時間の計算2//22時から29時までの時間を求める
-                $overtime_night[$i] = MinusVtime("29:30","24:00");
-//普通残業時間の計算2//22時までの普通残業時間に29時以降の時間を足す
-                $overtime2[$i] = MinusVtime("22:00",$base_open);
-                $overtime3[$i] = MinusVtime($close_pm[$i],"29:30");
-                $overtime[$i] =  AddVtime1($overtime2[$i],$overtime3[$i]);
+                //深夜残業時間
+                $overtime_night[$i] = "05:30";
+                //始業時間が所定終業時間を超え、22時以下の場合
+              }elseif($open_pm[$i] > $base_open && $open_pm[$i] <= "22:00"){
+                //22時までの普通残業時間(始業時間を引く)
+                $overtime1[$i] = MinusVtime("22:00",$open_pm[$i]);
+                //29時30分からの普通残業時間
+                $overtime2[$i] = MinusVtime($close_pm[$i],"29:30");
+                //2つの普通残業時間を足し合わせたものが普通残業時間
+                $overtime[$i] = AddVtime1($overtime1[$i],$overtime2[$i]);
+                $overtime_night[$i] = "05:30";
+                //始業時間が22時を超える場合
               }else{
-                $overtime_night[$i] = MinusVtime($max_opening,$open_pm[$i]);
+              // elseif($open_pm[$i] > "22:00" && $open_pm[$i]  <= "24:00"){
+                //普通残業時間の計算（終業時間から29：30を引いた値）
+                $overtime[$i] = MinusVtime($close_pm[$i],"29:30");
+                //深夜残業時間の計算（実働時間から普通残業時間を引いた値）
+                $overtime_night[$i] = MinusVtime($total[$i],$overtime[$i]);
+                //始業時間が
               }
             }
           }
 //深夜残業時間の計算---end
-//夜残業---end
+
 //朝普通残業時間がある場合、残業時間を足し合わせる
-// if(isset($mornig_overtime1[$i])){
-//   $overtime_night[$i]=AddVtime1($overtime_night[$i],$mornig_overtime1[$i]);
-// }
+          if(isset($mornig_overtime1[$i])){
+            $overtime[$i]=AddVtime1($overtime[$i],$mornig_overtime1[$i]);
+          }
 //朝深夜残業時間があり、夜深夜残業時間がある場合、残業時間を足し合わせる
           if(isset($mornig_overtime2[$i])){
             $overtime_night[$i]=AddVtime1($overtime_night[$i],$mornig_overtime2[$i]);
