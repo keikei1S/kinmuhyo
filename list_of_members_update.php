@@ -98,9 +98,18 @@ try
     $data[] = $staff;
   }
   $stmt->execute($data);
+
+  //社員テーブル（有給残数）をupdateした場合、サマリーテーブルの有給残数も併せてupdateする
+  $sql = "UPDATE TBL_SUMMARY SET remaining_paid_days=(SELECT holiday_with_pay FROM TBL_STAFF WHERE staff_number=:staff_number) WHERE staff_number=:staff_number2 ORDER BY year_and_month DESC LIMIT 1";
+  $stmt=$dbh->prepare($sql);
+  $stmt->bindValue(":staff_number",$staff,PDO::PARAM_STR);
+  $stmt->bindValue(":staff_number2",$staff,PDO::PARAM_STR);
+	$stmt->execute();
   $dbh = null;
 } catch (Exception $e)
 {
+  var_dump($e);
+  exit;
   header('Location: err_report.php');
   exit();
 }

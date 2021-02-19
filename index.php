@@ -103,6 +103,14 @@ try {
 		if(isset($_POST['change'])){
 			$retirement = $_POST["retirement_date"];
 			$paid_grant = $_POST["paid_grant"];
+			//更新者と日付を取得する
+			$staffsql = 'select last_modified, update_date FROM TBL_STAFF WHERE staff_number=:staff_number';
+			$staffstmt=$dbh->prepare($staffsql);
+			$staffstmt->bindValue(":staff_number",$staff_number,PDO::PARAM_STR);
+			$staffstmt->execute();
+			$staffrec = $staffstmt->fetch(PDO::FETCH_ASSOC);
+			$modify = $staffrec["last_modified"];
+			$update = substr($staffrec["update_date"],0,10);
 		}
 		$holiday = $_POST["holiday_with_pay"];
 		$admin_flag = $_POST["admin_flag"];
@@ -133,7 +141,7 @@ try {
 }
 ?>
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 
 <head>
 	<meta charset="UTF-8">

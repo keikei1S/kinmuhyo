@@ -94,14 +94,14 @@ function work_time($t){
 
 
 //DB接続の関数(ローカル)
-define('DB_USERNAME', 'root');
-define('DB_PASSWORD', '');
-define('DSN', 'mysql:dbname=kinmuhyo;host=localhost;charset=utf8');
+// define('DB_USERNAME', 'root');
+// define('DB_PASSWORD', '');
+// define('DSN', 'mysql:dbname=kinmuhyo;host=localhost;charset=utf8');
 
 //DB接続の関数(サーバー)
-// define('DB_USERNAME', 'pros-service');
-// define('DB_PASSWORD', 'p9bkubn8pg');
-// define('DSN', 'mysql:dbname=pros-service_kinmu;host=mysql731.db.sakura.ne.jp;charset=utf8');
+define('DB_USERNAME', 'pros-service');
+define('DB_PASSWORD', 'p9bkubn8pg');
+define('DSN', 'mysql:dbname=pros-service_kinmu;host=mysql731.db.sakura.ne.jp;charset=utf8');
 
 function db_connect(){
     $dbh = new PDO(DSN, DB_USERNAME, DB_PASSWORD);

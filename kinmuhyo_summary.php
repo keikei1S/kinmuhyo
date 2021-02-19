@@ -6,7 +6,7 @@ if (!refinfo){
 }
 </script>
 <!DOCTYPE HTML PUBLIC"-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
+<html lang="ja">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <link rel="stylesheet" href="/css/kinmu_summary.css">
@@ -17,7 +17,7 @@ if (!refinfo){
 //セッションが開始されていなければセッションを開始する。
 if(!isset($_SESSION)){
 	session_start();
-session_regenerate_id(true);
+	session_regenerate_id(true);
 }
 if (isset($_SESSION["login"])==false)
 {
@@ -34,15 +34,6 @@ if($_SERVER['HTTP_REFERER']!="https://www.pros-service.co.jp/kinmu/list_of_membe
 ?>
 	<h3><?php print $now_month?>月分勤務表</h3>
 <?php
-print'<table border="1">';
-	print'<tr>';
-		print'<th>　氏名　';
-		print'<td>';
-		print $staff_name;
-		print'</td>';
-		print'</th>';
-	print'</tr>';
-print'</table>';
 //先月か今月を選択するプルダウン生成S//
 $select['show']=array_fill(1,2,"");
 $show=filter_input(INPUT_POST,"show");
@@ -62,8 +53,19 @@ print <<<eof
 <input name="nengetshu" type="submit" value="表示">
 </form>
 eof;
-}
 //先月か今月を選択するプルダウン生成E//
+
+//名前表示
+print'<table border="1">';
+	print'<tr>';
+		print'<th>　氏名　';
+		print'<td style="width:120px; text-align: center;">';
+		print $staff_name;
+		print'</td>';
+		print'</th>';
+	print'</tr>';
+print'</table>';
+}
 //出勤日計算
 if(isset($check_result)){
 	$syukkin_nissuu="";
@@ -323,7 +325,7 @@ if(isset($sum3)){
 	</tr>
 </table>
 <?php }?>
-<table border="1" align="left" class="tbl_summary">
+<table border="1" align="left" class="tbl_summary" style="margin-top: 10px;">
 	<tr>
 		<th>執務日数</th>
 		<td><?php if(!empty($eigyoubi)){
@@ -440,6 +442,7 @@ if(isset($sum3)){
 </table>
 <?php if($_SERVER['HTTP_REFERER']!="https://www.pros-service.co.jp/kinmu/list_of_members.php"){
 	//if($_SERVER['HTTP_REFERER']!="http://localhost:8080/kinmuhyo/list_of_members.php"){?>
+	</br>
 	</br>
 	</br>
 	</br>

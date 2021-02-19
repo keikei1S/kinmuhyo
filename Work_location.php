@@ -81,7 +81,7 @@ try {
 	?>
 
 	<!DOCTYPE html>
-	<html>
+	<html lang="ja">
 	<head>
 	<meta charset="UTF-8">
 	<title>勤務地情報編集</title>

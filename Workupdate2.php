@@ -7,7 +7,7 @@ unset($_SESSION['strat']);
 unset($_SESSION['end']); 
 ?>
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
 <meta charset="UTF-8">
 </head>

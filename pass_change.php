@@ -1,6 +1,8 @@
 <?php
 session_start();
-if(isset($_SESSION["result"]["staff_number"])){
+if(isset($_SESSION["rec"])){
+	$staff_number = $_SESSION["rec"];
+}elseif(isset($_SESSION["result"]["staff_number"])){
 	$staff_number = $_SESSION["result"]["staff_number"];
 }
 if(isset($_SERVER['HTTP_REFERER'])){
@@ -11,8 +13,6 @@ if(isset($_SERVER['HTTP_REFERER'])){
 			if($staff_number==false){
 				$staff_number = openssl_decrypt($_GET['p'], 'AES-128-CBC', '社員番号');
 			}
-
-			//$staff_number=$_GET['p'];
 		}
 		if(isset($_GET['t'])) {
 			$token = $_GET['t'];
@@ -27,6 +27,7 @@ if(isset($_SERVER['HTTP_REFERER'])){
 				print "URLの期限が切れています。最初からやり直してください。";
 			exit();
 		}
+		$_SESSION["firtst_login"] = "1";
 }
 if(isset($_SESSION['err'])){
 	$err = 	$_SESSION['err'];
@@ -56,6 +57,11 @@ if(isset($_SESSION['err'])){
 	      		<input type="text" class="txtfiled" value="<? print $staff_number?>" readonly>
 	      		<input type="hidden" name="number" value="<?php echo $staff_number; ?>">
 	      	</li>
+			  <?php if(isset($err['staff_number'])){?>
+					<div class="errMsg">
+						<p><?php print $err['staff_number'];?></p>
+					</div>
+				<?php }?>
 	   		<li>
 				</br>
 	      		<label>新パスワード</label>
@@ -87,12 +93,8 @@ if(isset($_SESSION['err'])){
 	    <br/>
 		<button class="btn" type="submit" a href="pass_change_check.php">変更</a></button>
 	</form>
-	<? if(isset($motourl)){?>
-		<?if($motourl!="https://www.pros-service.co.jp/kinmu/staff_login.php"){?>
-			<button type=“button” class="btn_back" onclick="location.href='switch.php'">キャンセル</button>
-		<?}?>
-	<?}else{?>
-		<button type=“button” class="btn_back" onclick="location.href='staff_login.php'">キャンセル</button>
+	<?if(!isset($_SESSION["firtst_login"])){?>
+		<button type=“button” class="btn_back" onclick="location.href='switch.php'">キャンセル</button>
 	<?}?>
 	</div>
 </body>

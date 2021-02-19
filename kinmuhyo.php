@@ -246,8 +246,7 @@ if(isset($_SESSION['err_msg'])){
 }
 ?>
 <!DOCTYPE HTML PUBLIC"-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-
+<html lang="ja">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <link rel="stylesheet" href="/css/kinmuhyo.css">
@@ -312,9 +311,10 @@ if(isset($_SESSION["yukyu_err"])){
 //if($_SERVER['HTTP_REFERER']!="http://localhost:8080/kinmuhyo/list_of_members.php"){?>
     <table border="1" class="work_data">
         <tr>
-            <th class="title">　氏名　
-            <td class="b-break"><?php print $staff_name;?>
-            </td>
+            <th class="title">氏名
+            <?if($staff_name!=""){?>
+                 <td class="b-break"><?= $staff_name;?></td>
+            <?}?>
             </th>
         </tr>
     <!-- 該当の社員番号に紐づく勤務地IDから算出した勤務地情報を表示-->
@@ -332,7 +332,7 @@ if(isset($_SESSION["yukyu_err"])){
         </tr>
         <tr>
             <th class="title">勤務地</th>
-            <? if($work_id!=""){?>
+            <? if($work_name!=""){?>
             <td class="b-break"><?=$work_name ?></td>
             <?}?>
         </tr>
@@ -402,37 +402,37 @@ if(isset($_SESSION["yukyu_err"])){
                     <p>シフト</p>
                 </td>
                 <?}else{?>
-                <td>
+                <td class="print_tbl_day">
                     <p>日</p>
                 </td>
-                <td>
+                <td class="print_tbl_day">
                     <p>曜</p>
                 </td>
-                <td>
+                <td class="print_tbl_comment">
                     <p>作業内容</p>
                 </td>
-                <td>
+                <td class="print_tbl">
                     <p>始業</p>
                 </td>
-                <td>
+                <td class="print_tbl">
                     <p>終業</p>
                 </td>
-                <td>
+                <td class="print_tbl">
                     <p>休憩</p>
                 </td>
-                <td>
+                <td class="print_tbl">
                     <p>実働</p>
                 </td>
-                <td>
+                <td class="print_tbl">
                     <p>普通残業</p>
                 </td>
-                <td>
+                <td class="print_tbl">
                     <p>深夜残業</p>
                 </td>
-                <td>
+                <td class="print_tbl">
                     <p>不足</p>
                 </td>
-                <td>
+                <td class="print_tbl_biko">
                     <p>備考</p>
                 </td>
                 <td class="kyuka">

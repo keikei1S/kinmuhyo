@@ -24,11 +24,17 @@ if($pass=="abc12345678" || $pass2=="abc12345678"){
 	header('Location:pass_change.php');
 	exit;
 }
+if(empty($staff_number)){
+	$err['staff_number'] = '入力必須項目です。<br/>';
+}elseif(preg_match("/[^0-9]/", $staff_number)){
+	$err['staff_number'] = "半角数字で入力してください。";
+}elseif(preg_match('/^([0-9]{4})$/', $staff_number) == false){
+	$err['staff_number'] =  "4桁で入力してください。";
+}
 
 //新パスワードエラーチェック
 if(empty($pass)){
 	$err['pass1'] = '入力必須項目です。<br/>';
-	//$_SESSION['staff_number']=$staff_number;
 }
 elseif (!preg_match("/([0-9].*[a-zA-Z]|[a-zA-Z].*[0-9])/", $pass))
 {
@@ -83,8 +89,6 @@ catch(Exception $e)
 	header('Location: err_report.php');
   exit();
 }
-setcookie("st_num", $staff_number);
-setcookie("pass", $pass);
 $_SESSION["rec"] = $staff_number;
 header('Location:change_pass_done.php');
 exit();

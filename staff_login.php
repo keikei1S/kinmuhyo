@@ -1,10 +1,4 @@
 <?php
-if(isset($_COOKIE['st_num'])){
-	$staff_number = $_COOKIE["st_num"];
-}
-if(isset($_COOKIE['pass'])){
-	$password = $_COOKIE["pass"];
-}
 if(!isset($_SESSION)){
 	session_start();
 }
@@ -29,7 +23,7 @@ if($_SERVER["REQUEST_METHOD"] !== "POST"){
 }
 ?>
 <!DOCTYPE HTML PUBLIC"-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
+<html lang="ja">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <link rel="stylesheet" href="/css/style.css">
@@ -39,7 +33,7 @@ if($_SERVER["REQUEST_METHOD"] !== "POST"){
 </head>
 <body>
 <div class="img">
-<img src="/img/image_2020_4_10.png" height="60" width="150" alt="ロゴ" align="right" >
+<img src="/img/image_2020_4_10.png" height="60" width="200" alt="ロゴ" align="right" >
 </div>
 	<h1 class="login_title">ログイン画面<br/></h1>
 	<br/>
@@ -47,7 +41,9 @@ if($_SERVER["REQUEST_METHOD"] !== "POST"){
 		<div class="pw-form">
 				<form method="post" action="login_check.php" class="pw-form-container">
         <p>社員番号
-					<input type="text" name="staff_number" maxlength="4" value="<?php print $staff_number;?>" style="width:200px;">
+					<input type="text" name="staff_number" maxlength="4" value="<?php if(isset( $staff_number)){
+						print $staff_number;
+					}?>" style="width:200px;">
 				</p>
 			</br>
 			<?if(isset($err["staff_number"])){
@@ -57,7 +53,9 @@ if($_SERVER["REQUEST_METHOD"] !== "POST"){
 			}?>
 			</br>
         <p>パスワード
-					<input type="password" name="pass" value="<?php print $password;?>" style="width:200px;">
+					<input type="password" name="pass" value="<?php if(isset($password)){
+						print $password;
+					}?>" style="width:200px;">
           <span class="field-icon">
             <i toggle="#password-field" class="zmdi zmdi-eye toggle-password"></i>
           </span>
