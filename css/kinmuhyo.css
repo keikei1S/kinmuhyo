@@ -1,0 +1,91 @@
+table.calender_column{
+    width: 100%;
+}
+.stiky{
+   position: sticky;
+    position: -webkit-sticky;
+    top: 0;
+    z-index: 9999;
+    background-color: #ffffff;
+}
+table.calender_column td{
+  padding: 5px;
+  border: 1px solid #CCC;
+}
+
+/* 日曜日 */
+table.calender_column tr.week0{
+    background-color: #ffefef;
+    color: #FF0000;
+}
+
+/* 土曜日 */
+table.calender_column tr.week6{
+    background-color: #ededff;
+    color: #0000FF;
+}
+
+table.calender_column td:first-child{
+    text-align: center;
+}
+
+table.calender_column td:last-child{
+    color: #111111;
+}
+
+.kyuka{
+    background-color: #98fb98;
+}
+
+.check{
+    background-color: #ffc0cb;
+}
+
+.sum_title{
+    background-color: gray;
+}
+
+.shift{
+   background-color: #dcdcdc;
+}
+.syukujitu{
+  background-color: #ffefef;
+  color: #FF0000;
+}
+.done{
+  width: 200px;
+  height: 40px;
+  float: right;
+  margin-top: -150px;
+  background-color: #eb6ea5;
+}
+.preview{
+  width: 200px;
+  height: 40px;
+  float: right;
+  background-color: #eb6ea5;
+}
+.save{
+  width: 200px;
+  height: 40px;
+ float: right;
+  background-color: #a0d8ef;
+}
+
+.second_tbl{
+  position: absolute;
+  left: 560px;
+}
+
+table.work_data{
+  width: 300px;
+  text-align: center;
+}
+th.title{
+  width: 80px;
+  text-align: center;
+}
+td.b-break{
+  width: 120px;
+  word-break: break-all;
+}
