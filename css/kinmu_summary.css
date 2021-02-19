@@ -1,0 +1,14 @@
+.td{
+	margin-top: 20px;
+}
+.tbl_summary {
+   table-layout: fixed;     /* 固定レイアウト */
+   border-collapse: collapse; /* 隣接する枠線を重ねる */
+   border: 2px solid green;   /* 外枠：2px,実線,緑色 */
+   width: 700px;              /* 表の横幅：700ピクセル */
+}
+.tbl_summary td {
+   border: 1px solid green; /* 表内側の線：1px,実線,緑色 */
+   padding: 3px;            /* セル内側の余白：3ピクセル */
+   text-align: center;
+}

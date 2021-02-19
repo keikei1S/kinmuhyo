@@ -1,0 +1,74 @@
+.box{
+	margin-top: 20px;
+}
+.sagyo_comment{
+  font-size: 10px;
+}
+
+.print_pdf{
+	width: 200px;
+}
+.back_pdf{
+	width: 200px;
+}
+
+td,p{
+	text-align: center;
+  }
+
+
+@media print {
+	body {
+	-webkit-print-color-adjust: exact;
+	zoom: 64%;
+	}
+	@page {
+	 margin: 1.2cm; 
+	}
+	.calender_column{
+		margin-top: 40px;
+	}
+	.preview 
+	{
+		display:none;
+	}
+	.check{
+		display:none;
+	}
+	.kyuka{
+		display:none;
+	}
+	.shift{
+		display:none;
+	}
+
+	#print{
+		display:none;
+	}
+	#back{
+		display:none;	
+	}
+	img{
+		width: 180px;
+		height: 60px;
+		margin-top: -10px;
+	}
+
+	.print_tbl_day{
+		width: 35px;
+		text-align: center;
+	}
+	.print_tbl{
+		width: 80px;
+		text-align: center;
+	}
+	.print_tbl_biko{
+		width: 90px;
+		text-align: center;
+	}
+	.print_tbl_comment{
+		width: 205px;
+		text-align: center;
+	}
+
+}
